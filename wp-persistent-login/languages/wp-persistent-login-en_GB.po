@@ -1,0 +1,642 @@
+# Copyright (C) 2023 Luke Seager
+# This file is distributed under the same license as the WordPress Persistent Login package.
+msgid ""
+msgstr ""
+"Project-Id-Version: WordPress Persistent Login 2.0.12\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-persistent-"
+"login\n"
+"POT-Creation-Date: 2023-04-02 18:22:54+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2023-04-02 18:45+0000\n"
+"Last-Translator: \n"
+"Language-Team: English (UK)\n"
+"Language: en_GB\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Country: United States\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-KeywordsList: __;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;"
+"_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;"
+"esc_html_x:1,2c;\n"
+"X-Poedit-Basepath: ../\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-Bookmarks: \n"
+"X-Textdomain-Support: yes\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.4; wp-6.2"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:106
+#: classes/wp-persistent-login-active-logins.php:279
+msgid ""
+"You have reached the maximum number of logins allowed at one time. Please "
+"log out of another device and try again."
+msgstr ""
+"You have reached the maximum number of logins allowed at one time. Please "
+"log out of another device and try again."
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:260
+msgid "devices"
+msgstr "devices"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:262
+msgid "device"
+msgstr "device"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:266
+msgid ""
+"<p>You have reached your maximum number of active logins.</p>\n"
+"                <p>Please logout of %d %s from the list below to continue."
+"</p>"
+msgstr ""
+"<p>You have reached your maximum number of active logins.</p>\n"
+"                <p>Please logout of %d %s from the list below to continue."
+"</p>"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:493
+msgid "Session successfully ended."
+msgstr "Session successfully ended."
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:496
+msgid "Failed to end session. Please try again."
+msgstr "Failed to end session. Please try again."
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:510
+#: classes/premium/wp-persistent-login-active-logins-premium.php:655
+msgid "Session"
+msgstr "Session"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:511
+#: classes/premium/wp-persistent-login-active-logins-premium.php:656
+msgid "Last Visit"
+msgstr "Last Visit"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:512
+#: classes/premium/wp-persistent-login-active-logins-premium.php:657
+msgid "Logout"
+msgstr "Logout"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:537
+#: classes/premium/wp-persistent-login-active-logins-premium.php:672
+msgid "This device"
+msgstr "This device"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:541
+#: classes/premium/wp-persistent-login-active-logins-premium.php:676
+msgid "IP Address"
+msgstr "IP Address"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:555
+#: classes/premium/wp-persistent-login-active-logins-premium.php:691
+msgid "Logout of this device"
+msgstr "Logout of this device"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:564
+#: classes/premium/wp-persistent-login-active-logins-premium.php:565
+#: classes/premium/wp-persistent-login-active-logins-premium.php:566
+#: classes/premium/wp-persistent-login-active-logins-premium.php:703
+#: classes/premium/wp-persistent-login-active-logins-premium.php:704
+#: classes/premium/wp-persistent-login-active-logins-premium.php:705
+#: classes/wp-persistent-login-profile.php:264
+#: classes/wp-persistent-login-profile.php:273
+#: classes/wp-persistent-login-profile.php:275
+msgid "End Session"
+msgstr "End Session"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:587
+msgid "You need to be logged in to access this information."
+msgstr "You need to be logged in to access this information."
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:723
+msgid ""
+"<p>You haven't reached the active login limit.</p> <p>Please try again or "
+"continue browsing the website.</p>"
+msgstr ""
+"<p>You haven't reached the active login limit.</p> <p>Please try again or "
+"continue browsing the website.</p>"
+
+#: classes/premium/wp-persistent-login-active-logins-premium.php:725
+msgid ""
+"<p>Sorry, you don't have permission to view this data.</p> <p>Please try "
+"again or continue browsing the website.</p>"
+msgstr ""
+"<p>Sorry, you don't have permission to view this data.</p> <p>Please try "
+"again or continue browsing the website.</p>"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:479
+#: classes/wp-persistent-login-settings.php:486
+msgid ""
+"WordPress Persistent Login has been updated to the latest database version!"
+msgstr ""
+"WordPress Persistent Login has been updated to the latest database version!"
+
+#. Plugin Name of the plugin/theme
+msgid "WordPress Persistent Login"
+msgstr "WordPress Persistent Login"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:492
+msgid "Premium Plan"
+msgstr "Premium Plan"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:497
+#: classes/wp-persistent-login-settings.php:505
+msgid "My Account"
+msgstr "My Account"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:500
+msgid "Change my plan"
+msgstr "Change my plan"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:503
+msgid "Premium Support"
+msgstr "Premium Support"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:543
+msgid "Persistent login will keep all users logged in automatically. Forever."
+msgstr "Persistent login will keep all users logged in automatically. Forever."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:555
+#: classes/wp-persistent-login-settings.php:562
+msgid "Persistent Login Settings"
+msgstr "Persistent Login Settings"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:562
+#: classes/wp-persistent-login-settings.php:569
+msgid "Control how users are kept logged into your website over time."
+msgstr "Control how users are kept logged into your website over time."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:690
+#: classes/wp-persistent-login-settings.php:604
+msgid "Dashboard panel options"
+msgstr "Dashboard panel options"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:699
+#: classes/wp-persistent-login-settings.php:614
+msgid "Hide 'At a glance' dashboard stats"
+msgstr "Hide 'At a glance' dashboard stats"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:712
+#: classes/wp-persistent-login-settings.php:626
+msgid "Duplicate sessions"
+msgstr "Duplicate sessions"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:721
+#: classes/wp-persistent-login-settings.php:635
+msgid "Allow duplicate sessions"
+msgstr "Allow duplicate sessions"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:725
+#: classes/wp-persistent-login-settings.php:639
+msgid "(select if you're having trouble staying logged in on multiple devices)"
+msgstr ""
+"(select if you're having trouble staying logged in on multiple devices)"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:738
+#: classes/wp-persistent-login-settings.php:651
+msgid "Save Persistent Login Settings"
+msgstr "Save Persistent Login Settings"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:747
+#: classes/wp-persistent-login-settings.php:660
+msgid "Active Login Settings"
+msgstr "Active Login Settings"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:754
+#: classes/wp-persistent-login-settings.php:667
+msgid "Control how many active logins users can have at any one time."
+msgstr "Control how many active logins users can have at any one time."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:772
+msgid "Enable active logins"
+msgstr "Enable active logins"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:780
+msgid "Enable active logins limit"
+msgstr "Enable active logins limit"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:790
+msgid "Active logins limit"
+msgstr "Active logins limit"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:794
+msgid "Allow users to have"
+msgstr "Allow users to have"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:799
+msgid "active login(s)"
+msgstr "active login(s)"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:803
+msgid ""
+"(This limit will only apply if \"Enable active logins limit\" is checked)"
+msgstr ""
+"(This limit will only apply if \"Enable active logins limit\" is checked)"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:815
+#: classes/wp-persistent-login-settings.php:714
+msgid "Automatically end the oldest active login for the user."
+msgstr "Automatically end the oldest active login for the user."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:819
+msgid "Allow users to select which active logins to end."
+msgstr "Allow users to select which active logins to end."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:823
+#: classes/wp-persistent-login-settings.php:718
+msgid "Block new logins if active login limit reached."
+msgstr "Block new logins if active login limit reached."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:830
+#: classes/wp-persistent-login-settings.php:725
+msgid "Limit reached logic"
+msgstr "Limit reached logic"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:873
+msgid "Limit reached redirect"
+msgstr "Limit reached redirect"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:876
+msgid ""
+"When the number of active logins reaches the limit set, the user will be "
+"redirect to this page to end a session before they can continue to login."
+msgstr ""
+"When the number of active logins reaches the limit set, the user will be "
+"redirect to this page to end a session before they can continue to login."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:899
+msgid "Edit selected page"
+msgstr "Edit selected page"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:908
+msgid ""
+"The selected page %s must %s include the %s Maximum Logins Control %s block, "
+"or the %s shortcode to work correctly. "
+msgstr ""
+"The selected page %s must %s include the %s Maximum Logins Control %s block, "
+"or the %s shortcode to work correctly. "
+
+#: classes/premium/wp-persistent-login-settings-premium.php:927
+msgid "Active login roles"
+msgstr "Active login roles"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:950
+msgid ""
+"Which roles should the active login limit apply to? Unchecking a role will "
+"allow unlimited active logins for that role."
+msgstr ""
+"Which roles should the active login limit apply to? Unchecking a role will "
+"allow unlimited active logins for that role."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:960
+msgid "Manage active logins"
+msgstr "Manage active logins"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:964
+msgid "Front End"
+msgstr "Front End"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:965
+msgid ""
+"Let users manage their active logins on different devices from the front-end "
+"using either of the methods below:"
+msgstr ""
+"Let users manage their active logins on different devices from the front-end "
+"using either of the methods below:"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:969
+msgid ""
+"Add the <strong>Manage Sessions</strong> Block from the Widgets section. "
+msgstr ""
+"Add the <strong>Manage Sessions</strong> Block from the Widgets section. "
+
+#: classes/premium/wp-persistent-login-settings-premium.php:970
+msgid "Or add this shortcode anywhere in the classic editor:"
+msgstr "Or add this shortcode anywhere in the classic editor:"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:981
+msgid "Add to any page to allow logged-in users to manage their sessions."
+msgstr "Add to any page to allow logged-in users to manage their sessions."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:991
+msgid ""
+"You and your users can manage active logins from their profile page in the "
+"dashboard."
+msgstr ""
+"You and your users can manage active logins from their profile page in the "
+"dashboard."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:995
+msgid ""
+"Click on a user to view their profile and scroll down to the Sessions "
+"heading to manage their active logins."
+msgstr ""
+"Click on a user to view their profile and scroll down to the Sessions "
+"heading to manage their active logins."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1001
+msgid "View All Users"
+msgstr "View All Users"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1003
+#: classes/wp-persistent-login-settings.php:759
+msgid "or"
+msgstr "or"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1005
+msgid "Visit Your Profile"
+msgstr "Visit Your Profile"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1007
+msgid "to see your sessions"
+msgstr "to see your sessions"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1021
+#: classes/wp-persistent-login-settings.php:779
+msgid "Save Active Login Settings"
+msgstr "Save Active Login Settings"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1040
+msgid "Want a new feature?"
+msgstr "Want a new feature?"
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1043
+msgid ""
+"If you'd like to see a new feature on WordPress Persistent Login, just "
+"request it by clicking the button below and <strong>choose the Feature "
+"Request option</strong>."
+msgstr ""
+"If you'd like to see a new feature on WordPress Persistent Login, just "
+"request it by clicking the button below and <strong>choose the Feature "
+"Request option</strong>."
+
+#: classes/premium/wp-persistent-login-settings-premium.php:1046
+msgid "Request a Feature"
+msgstr "Request a Feature"
+
+#: classes/wp-persistent-login-active-logins.php:44
+#: classes/wp-persistent-login-profile.php:149
+msgid " years ago"
+msgstr " years ago"
+
+#: classes/wp-persistent-login-active-logins.php:45
+#: classes/wp-persistent-login-profile.php:150
+msgid " months ago"
+msgstr " months ago"
+
+#: classes/wp-persistent-login-active-logins.php:46
+#: classes/wp-persistent-login-profile.php:151
+msgid " days ago"
+msgstr " days ago"
+
+#: classes/wp-persistent-login-active-logins.php:47
+#: classes/wp-persistent-login-profile.php:152
+msgid " hours ago"
+msgstr " hours ago"
+
+#: classes/wp-persistent-login-active-logins.php:48
+#: classes/wp-persistent-login-profile.php:153
+msgid " mins ago"
+msgstr " mins ago"
+
+#: classes/wp-persistent-login-active-logins.php:49
+#: classes/wp-persistent-login-profile.php:154
+msgid "Active now"
+msgstr "Active now"
+
+#: classes/wp-persistent-login-active-logins.php:87
+msgid "on"
+msgstr "on"
+
+#: classes/wp-persistent-login-admin.php:44
+msgid "Settings"
+msgstr "Settings"
+
+#: classes/wp-persistent-login-profile.php:209
+msgid "Active Logins - WP Persistent Login"
+msgstr "Active Logins - WP Persistent Login"
+
+#: classes/wp-persistent-login-profile.php:213
+msgid "Select the active logins you want to end, and click update profile"
+msgstr "Select the active logins you want to end, and click update profile"
+
+#: classes/wp-persistent-login-profile.php:222
+msgid "Session Details"
+msgstr "Session Details"
+
+#: classes/wp-persistent-login-profile.php:225
+msgid "Last Active"
+msgstr "Last Active"
+
+#: classes/wp-persistent-login-profile.php:228
+msgid "Manage"
+msgstr "Manage"
+
+#: classes/wp-persistent-login-profile.php:240
+msgid "IP Address: "
+msgstr "IP Address: "
+
+#: classes/wp-persistent-login-profile.php:244
+msgid "Approximate location: "
+msgstr "Approximate location: "
+
+#: classes/wp-persistent-login-profile.php:256
+msgid "(this device)"
+msgstr "(this device)"
+
+#: classes/wp-persistent-login-profile.php:297
+msgid "You don't have any active logins at the moment."
+msgstr "You don't have any active logins at the moment."
+
+#: classes/wp-persistent-login-settings.php:408
+msgid "Usage"
+msgstr "Usage"
+
+#: classes/wp-persistent-login-settings.php:419
+msgid "Usage Breakdown:"
+msgstr "Usage Breakdown:"
+
+#: classes/wp-persistent-login-settings.php:427
+msgid ""
+"Did you know you can control which user roles are kept logged in by "
+"upgrading?"
+msgstr ""
+"Did you know you can control which user roles are kept logged in by "
+"upgrading?"
+
+#: classes/wp-persistent-login-settings.php:450
+msgid ""
+"If you end all sessions, all users will be logged out of the website "
+"(including you)."
+msgstr ""
+"If you end all sessions, all users will be logged out of the website "
+"(including you)."
+
+#: classes/wp-persistent-login-settings.php:500
+msgid "Free Forever Plan"
+msgstr "Free Forever Plan"
+
+#: classes/wp-persistent-login-settings.php:508
+msgid "Manage my plan"
+msgstr "Manage my plan"
+
+#: classes/wp-persistent-login-settings.php:511
+msgid "Support"
+msgstr "Support"
+
+#: classes/wp-persistent-login-settings.php:528
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: classes/wp-persistent-login-settings.php:534
+msgid "Persistent Login"
+msgstr "Persistent Login"
+
+#: classes/wp-persistent-login-settings.php:540
+msgid "Active Logins"
+msgstr "Active Logins"
+
+#: classes/wp-persistent-login-settings.php:550
+msgid ""
+"Persistent login will keep all users logged in automatically. For free. "
+"Forever."
+msgstr ""
+"Persistent login will keep all users logged in automatically. For free. "
+"Forever."
+
+#: classes/wp-persistent-login-settings.php:586
+msgid "Keep users logged in for"
+msgstr "Keep users logged in for"
+
+#: classes/wp-persistent-login-settings.php:589
+msgid "365 days"
+msgstr "365 days"
+
+#: classes/wp-persistent-login-settings.php:592
+msgid ""
+"To change the remember me duration and which roles it applies to, please "
+"consider upgrading."
+msgstr ""
+"To change the remember me duration and which roles it applies to, please "
+"consider upgrading."
+
+#: classes/wp-persistent-login-settings.php:685
+msgid "Limit active logins"
+msgstr "Limit active logins"
+
+#: classes/wp-persistent-login-settings.php:693
+msgid "Limit users to <strong>1 active login</strong>"
+msgstr "Limit users to <strong>1 active login</strong>"
+
+#: classes/wp-persistent-login-settings.php:696
+msgid ""
+"When a user reaches the active login limit, they will automatically be "
+"logged out from their oldest session."
+msgstr ""
+"When a user reaches the active login limit, they will automatically be "
+"logged out from their oldest session."
+
+#: classes/wp-persistent-login-settings.php:701
+msgid ""
+"To change the active logins limit, which roles it applies to and let users "
+"select which session to end, please consider upgrading."
+msgstr ""
+"To change the active logins limit, which roles it applies to and let users "
+"select which session to end, please consider upgrading."
+
+#: classes/wp-persistent-login-settings.php:748
+msgid "Manage Active Logins"
+msgstr "Manage Active Logins"
+
+#: classes/wp-persistent-login-settings.php:752
+msgid ""
+"You can manage your own active logins from your profile page in the "
+"dashboard."
+msgstr ""
+"You can manage your own active logins from your profile page in the "
+"dashboard."
+
+#: classes/wp-persistent-login-settings.php:757
+msgid "Manage your active logins"
+msgstr "Manage your active logins"
+
+#: classes/wp-persistent-login-settings.php:761
+msgid "Upgrade"
+msgstr "Upgrade"
+
+#: classes/wp-persistent-login-settings.php:767
+msgid ""
+"To manage all active logins & allow users to manage their own active logins "
+"from the front-end, please consider upgrading."
+msgstr ""
+"To manage all active logins & allow users to manage their own active logins "
+"from the front-end, please consider upgrading."
+
+#: classes/wp-persistent-login-user-count.php:64
+msgid "Once every minute"
+msgstr "Once every minute"
+
+#: classes/wp-persistent-login-user-count.php:150
+msgid ""
+"User count is currently running. Figures below will update once the count "
+"has completed. The %s role is being counted now."
+msgstr ""
+"User count is currently running. Figures below will update once the count "
+"has completed. The %s role is being counted now."
+
+#: classes/wp-persistent-login-user-count.php:236
+msgid "user"
+msgstr "user"
+
+#: classes/wp-persistent-login-user-count.php:236
+msgid "users"
+msgstr "users"
+
+#: classes/wp-persistent-login-user-count.php:237
+msgid "is "
+msgstr "is "
+
+#: classes/wp-persistent-login-user-count.php:237
+msgid "are "
+msgstr "are "
+
+#: classes/wp-persistent-login-user-count.php:240
+msgid "<strong>%d %s</strong> %s being kept logged into your website."
+msgstr "<strong>%d %s</strong> %s being kept logged into your website."
+
+#: classes/wp-persistent-login-user-count.php:265
+msgid ""
+"User count is currently running. The previous loggged in user count was %d."
+msgstr ""
+"User count is currently running. The previous loggged in user count was %d."
+
+#: classes/wp-persistent-login-user-count.php:339
+msgid "Logins not counted yet."
+msgstr "Logins not counted yet."
+
+#: classes/wp-persistent-login-user-count.php:382
+msgid "The previous logged in user count was: %d"
+msgstr "The previous logged in user count was: %d"
+
+#: classes/wp-persistent-login-user-count.php:415
+msgid "Next automated logged in count: Approximately %d hours"
+msgstr "Next automated logged in count: Approximately %d hours"
+
+#. Plugin URI of the plugin/theme
+msgid "https://persistentlogin.com/"
+msgstr "https://persistentlogin.com/"
+
+#. Description of the plugin/theme
+msgid ""
+"Keep users logged into your website securely, and allows you to limit the "
+"number of active logins."
+msgstr ""
+"Keep users logged into your website securely, and allows you to limit the "
+"number of active logins."
+
+#. Author of the plugin/theme
+msgid "Luke Seager"
+msgstr "Luke Seager"
+
+#. Author URI of the plugin/theme
+msgid "https://lukeseager.com/"
+msgstr "https://lukeseager.com/"

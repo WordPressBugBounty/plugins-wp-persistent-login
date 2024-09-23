@@ -1,0 +1,6 @@
+{
+    "require": {
+        "whichbrowser/parser": "^2.0",
+        "psr/cache": "1.0.1"
+    }
+}

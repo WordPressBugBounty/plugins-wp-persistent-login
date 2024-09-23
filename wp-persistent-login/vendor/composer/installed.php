@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'name' => '__root__',
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '13d2159ee5481e4e1e68b669cf785507c02dee72',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'dev' => true,
+    ),
+    'versions' => array(
+        '__root__' => array(
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '13d2159ee5481e4e1e68b669cf785507c02dee72',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'psr/cache' => array(
+            'pretty_version' => '1.0.1',
+            'version' => '1.0.1.0',
+            'reference' => 'd11b50ad223250cf17b86e38383413f5a6764bf8',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../psr/cache',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'whichbrowser/parser' => array(
+            'pretty_version' => 'v2.1.8',
+            'version' => '2.1.8.0',
+            'reference' => '581d614d686bfbec3529ad60562a5213ac5d8d72',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../whichbrowser/parser',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+    ),
+);
