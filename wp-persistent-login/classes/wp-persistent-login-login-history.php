@@ -51,6 +51,18 @@ class WP_Persistent_Login_Login_History {
                 $this->notify_user_of_new_login($user->ID, $login_history_id);
             }
         
+        } else {
+
+            // if the user is using a known device, update the last login date
+            
+            // get the current device id
+            $device_id = $this->create_login_history_device_id( $user->ID, $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] );
+
+            // update the last login date
+            global $wpdb;
+            $table_name = $wpdb->prefix . $this->table_name;
+            $wpdb->update( $table_name, array('created_at' => current_time('mysql')), array('device_id' => $device_id) );
+
         }
 
     }
@@ -264,7 +276,8 @@ class WP_Persistent_Login_Login_History {
         $user = get_user_by( 'id', $user_id );
         $user_email = $user->user_email;
 
-        $subject = __('New Login Detected', 'wp-persistent-login');
+        // $subject = __('New Login Detected', 'wp-persistent-login');
+        $subject = get_option('persistent_login_notification_email_subject') ?: __('New Login Detected on your account', 'wp-persistent-login');
 
         // fetch the login history data
         $login_data = $this->fetch_login_history($login_history_id);
@@ -275,7 +288,7 @@ class WP_Persistent_Login_Login_History {
 
         // email the user about a new login so they are aware.
         $email = new WP_Persistent_Login_Email();
-        $email->send_new_login_email($user_email, $subject, $login_data);
+        $email->send_new_login_email($user_email, $login_data);
 
     }
 

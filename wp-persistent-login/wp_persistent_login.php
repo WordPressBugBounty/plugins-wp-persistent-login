@@ -9,7 +9,7 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 2.1.1
+ *   Version: 2.1.2
  *
  *
  */
@@ -72,8 +72,8 @@ if ( function_exists( 'persistent_login' ) ) {
     new WP_Persistent_Login_Admin();
     new WP_Persistent_Login_Profile();
     new WP_Persistent_Login_Active_Logins();
-    new WP_Persistent_Login_Email();
     new WP_Persistent_Login_Login_History();
+    new WP_Persistent_Login_Email();
     new WP_Persistent_Login_User_Count();
     /**
      * Action hook to execute after WP Persistent Login plugin init.
@@ -83,5 +83,17 @@ if ( function_exists( 'persistent_login' ) ) {
      * @since 2.0.0
      */
     do_action( 'wp_persistent_login_init' );
+    add_action(
+        'wp_mail_failed',
+        'onMailError',
+        10,
+        1
+    );
+    function onMailError(  $wp_error  ) {
+        // turn wp_error into a string.
+        $wp_error = $wp_error->get_error_message();
+        error_log( 'WP Persistent Login: ' . $wp_error );
+    }
+
 }
 // end if persistent_login() exists.

@@ -243,6 +243,8 @@ class WP_Persistent_Login_Settings {
 
 		$this->update_notify_new_logins($post_data);
 
+		$this->update_notification_email_subject($post_data);
+
 		$this->update_notification_email_template($post_data);
 
 	}
@@ -525,6 +527,24 @@ class WP_Persistent_Login_Settings {
 
 
 	/**
+	 * get_notification_email_subject
+	 * 
+	 * @return string
+	 * @since 2.1.2
+	 */
+	public function get_notification_email_subject() {
+		
+		$notification_email_subject = get_option('persistent_login_notification_email_subject');
+		if( $notification_email_subject === false || $notification_email_subject === '' ) {
+			$notification_email_subject = __('New login detected to your account', 'wp-persistent-login');
+		}
+
+		return $notification_email_subject;
+
+	}
+
+
+	/**
 	 * get_notification_email_template
 	 *
 	 * @return string
@@ -561,13 +581,32 @@ Thanks,
 
 	}
 
+
+	/**
+	 * update_notification_email_subject
+	 * 
+	 * @param  array $post_data
+	 * @return void
+	 */
+	protected function update_notification_email_subject($post_data) {
+
+		if( isset($post_data['notificationEmailSubject']) ) {
+			$notification_email_subject = $post_data['notificationEmailSubject'];
+		} else {
+			$notification_email_subject = '';
+		}
+
+		return update_option('persistent_login_notification_email_subject', $notification_email_subject);
+
+	}
+
 	
 	/**
 	 * update_notification_email_template
 	 *
 	 * @return void
 	 */
-	private function update_notification_email_template($post_data) {
+	protected function update_notification_email_template($post_data) {
 
         if( isset($post_data['notificatioinEmailTemplate']) ) {
             $notificatioin_email_template = $post_data['notificatioinEmailTemplate'];
@@ -993,13 +1032,6 @@ Thanks,
 									 'wp-persistent-login' ); 
 							?>
 						</p>
-						<p>
-							<?php 
-								_e(
-									'This feature is currently in beta testing. Please send any feedback to <a href="mailto:luke@persistentlogin.com">luke@persistentlogin.com</a>.', 
-									'wp-persistent-login' ); 
-							?>
-						</p>
 
 						<form method="POST">
 					
@@ -1061,21 +1093,44 @@ Thanks,
 
 
 										<!-- email notificaton to users -->
-										<?php $email_notification_email_template = $this->get_notification_email_template(false); ?> 
+										
 										<tr style="border-bottom: 1px solid #dfdfdf;">
 											<th>
-												<?php _e('Email notification template', 'wp-persistent-login' ); ?><br/>
+												<?php _e('New login detected email notification template', 'wp-persistent-login' ); ?><br/>
 											</th>
 											<td>
-												<textarea name="notificatioinEmailTemplate" id="notificatioinEmailTemplate" cols="1" rows="17" style="width: 100%;"><?php echo $email_notification_email_template; ?></textarea>
-												<h4>
+
+												<!-- subject input -->
+												<?php $email_notification_subject = $this->get_notification_email_subject(); ?>
+												<label>
+													Subject
+													<input 
+														type="text" name="notificationEmailSubject" id="notificationEmailSubject" 
+														placeholder="<?php _e('New login detected on {{SITE_NAME}}', 'wp-persistent-login' ); ?>" 
+														style="width: 100%; margin-bottom: 1rem;" 
+														value="<?php echo $email_notification_subject; ?>"
+													/>
+												</label>
+
+												<?php $email_notification_email_template = $this->get_notification_email_template(false); ?> 
+												<label>
+													Email
+													<textarea name="notificatioinEmailTemplate" id="notificatioinEmailTemplate" cols="1" rows="17" style="width: 100%;"><?php echo $email_notification_email_template; ?></textarea>
+												</label>
+
+												<h4 style="margin-bottom: 0;">
 													<?php _e('Shortcodes', 'wp-persistent-login' ); ?>:
 												</h4>
-												<ul>
+												<ul style="display: grid; grid-template-columns: 1fr 1fr; grid-gap: 0 1rem; font-size: 0.85em;">
 													<li><strong>{{TIMESTAMP}}</strong> - <?php _e('The date and time of the new login.', 'wp-persistent-login' ); ?></li>
 													<li><strong>{{DEVICE_DETAILS}}</strong> - <?php _e('The browser and device details of the new login.', 'wp-persistent-login' ); ?></li></li>
 													<li><strong>{{IP_ADDRESS}}</strong> - <?php _e('The IP address of the new login.', 'wp-persistent-login' ); ?></li>
 													<li><strong>{{SITE_NAME}}</strong> - <?php _e('The title of the website from Settings > General.', 'wp-persistent-login' ); ?></li>
+													<li><strong>{{USER_EMAIL}}</strong> - <?php _e('The email address of the user.', 'wp-persistent-login' ); ?></li>
+													<li><strong>{{USERNAME}}</strong> - <?php _e('The username of the user.', 'wp-persistent-login' ); ?></li>
+													<li><strong>{{USER_DISPLAY_NAME}}</strong> - <?php _e('The display name of the user.', 'wp-persistent-login' ); ?></li>
+													<li><strong>{{USER_FIRST_NAME}}</strong> - <?php _e('The first name of the user.', 'wp-persistent-login' ); ?></li>
+													<li><strong>{{USER_LAST_NAME}}</strong> - <?php _e('The last name of the user.', 'wp-persistent-login' ); ?></li>
 												</ul>
 												<div style="display: flex; align-items: center; gap: 1rem; margin-top: 2rem;">
 													<h4 style="margin: 0;">
