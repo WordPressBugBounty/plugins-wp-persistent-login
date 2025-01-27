@@ -639,6 +639,13 @@ Thanks,
 						<h3><?php _e('Usage', 'wp-persistent-login' ); ?></h3>
 
 						<?php
+							// check if WP_CRON is enabled and running
+							if( defined('DISABLE_WP_CRON') || DISABLE_WP_CRON === true ) {
+								echo sprintf('<p style="background: #ffadad; padding: 0.75rem 1rem; font-weight: 600; color: black; border: 2px solid #cf8181;">%s</p>', __('Notice: WP Cron is disabled. The user count below will not work without it. Persistent Login will still function normally. Please enable WP Cron to view logged in user metrics.', 'wp-persistent-login' ));
+							}
+						?>
+
+						<?php
 							$count = new WP_Persistent_Login_User_Count();
 							if( $count->is_user_count_running() ) {
 								echo sprintf('<p>%s</p>', $count->output_current_counting_role());

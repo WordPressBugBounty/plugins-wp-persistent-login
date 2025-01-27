@@ -9,7 +9,7 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 2.1.2
+ *   Version: 2.1.3
  *
  *
  */
@@ -85,15 +85,17 @@ if ( function_exists( 'persistent_login' ) ) {
     do_action( 'wp_persistent_login_init' );
     add_action(
         'wp_mail_failed',
-        'onMailError',
+        'wppl_on_mail_error_log',
         10,
         1
     );
-    function onMailError(  $wp_error  ) {
-        // turn wp_error into a string.
-        $wp_error = $wp_error->get_error_message();
-        error_log( 'WP Persistent Login: ' . $wp_error );
-    }
+    if ( !function_exists( 'wppl_on_mail_error_log' ) ) {
+        function wppl_on_mail_error_log(  $wp_error  ) {
+            // turn wp_error into a string.
+            $wp_error = $wp_error->get_error_message();
+            error_log( 'WP Persistent Login: ' . $wp_error );
+        }
 
+    }
 }
 // end if persistent_login() exists.
