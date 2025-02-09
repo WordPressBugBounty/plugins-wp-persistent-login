@@ -640,9 +640,14 @@ Thanks,
 
 						<?php
 							// check if WP_CRON is enabled and running
-							if( defined('DISABLE_WP_CRON') || DISABLE_WP_CRON === true ) {
-								echo sprintf('<p style="background: #ffadad; padding: 0.75rem 1rem; font-weight: 600; color: black; border: 2px solid #cf8181;">%s</p>', __('Notice: WP Cron is disabled. The user count below will not work without it. Persistent Login will still function normally. Please enable WP Cron to view logged in user metrics.', 'wp-persistent-login' ));
-							}
+							if( defined('DISABLE_WP_CRON') ) {
+								if( DISABLE_WP_CRON == true ) {
+									echo sprintf(
+										'<p style="background: #ffadad; padding: 0.75rem 1rem; font-weight: 600; color: black; border: 2px solid #cf8181;">%s</p>', 
+										__('Notice: WP Cron is disabled. The user count below will not work without it. Persistent Login will still function normally. Please enable WP Cron to view logged in user metrics.', 'wp-persistent-login' )
+									);
+								}
+							}	
 						?>
 
 						<?php
@@ -741,13 +746,13 @@ Thanks,
 			
 			<div style="float: right;">
 				<p>
-					<a href="<?php echo WPPL_ACCOUNT_PAGE; ?>" class="button">
+					<a href="<?php echo WPPL_ACCOUNT_PAGE; ?>" class="wppl-button">
 						<?php _e('My Account', 'wp-persistent-login' ); ?>
 					</a>
-					<a href="<?php echo WPPL_UPGRADE_PAGE; ?>" class="button">
+					<a href="<?php echo WPPL_UPGRADE_PAGE; ?>" class="wppl-button">
 						<?php _e('Manage my plan', 'wp-persistent-login' ); ?>
 					</a>
-					<a href="<?php echo WPPL_SUPPORT_PAGE; ?>" class="button">
+					<a href="<?php echo WPPL_SUPPORT_PAGE; ?>" class="wppl-button">
 						<?php _e('Support', 'wp-persistent-login' ); ?>
 					</a>
 				</p>

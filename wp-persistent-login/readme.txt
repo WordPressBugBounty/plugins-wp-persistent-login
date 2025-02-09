@@ -4,7 +4,7 @@ Donate link:
 Tags: login, active logins, sessions, session management
 Requires at least: 5.0
 Tested up to: 6.7.1
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -13,9 +13,11 @@ Persistent Login keeps users logged into your website, limits the number of acti
 
 == Description ==
 
-Persistent Login keeps users logged into your website unless they explicitly choose to log-out. It allows you to limite the number of active logins each user can have, and it alerts users of new logins from new devices.
+## Keep wordpress users logged in forever with Persistent Login
 
-It requires little set-up, just install and save your users time by keeping them logged into your website securely, avoiding the annoyance of forgetting usernames & passwords.
+Persistent Login keeps users logged into your website unless they explicitly choose to log-out. It allows you to limit the number of active logins each user can have, and it alerts users of logins from new devices.
+
+Persistent Login requires little set-up, just install and save your users time by keeping them logged into your website securely, avoiding the annoyance of forgetting usernames & passwords.
 
 For added security, users can visit their Profile page in the WP Admin area to see how many sessions they have, what device was used and when they were last active. The user can choose to end any session with the click of a button.
 
@@ -60,6 +62,14 @@ The premium plan offers the following features:
 * Control which roles have active login limits applied
 * Select exactly how many active logins users are allowed
 * When the limit is reached: Auto-logout oldest login, let the user decide which session to end, or block the login.
+
+## Stop users being logged out of WordPress
+
+Stop users being logged out of WordPress with Persistent Login plugin. Ensure extended login sessions, reduce frustration for administrators and visitors. By keeping users active, Persistent Login improves user experience, lowers bounce rates, and prevents disruptions. 
+
+This plugin integrates seamlessly with WordPress to optimise session management without compromising security. Configure your preferences and let the plugin handle everything. You can customise durations for persistent logins and minimise repeated authentication prompts. 
+
+Ultimately, this tool streamlines WordPress operations, ensures convenience, and provides peace of mind. Stop users being logged out of WordPress by installing  today and gain uninterrupted access to your website.
 
 == Installation ==
 
@@ -148,6 +158,9 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 2.1.4 =
+* Fix: Fixed issue with DISBALE_WP_CRON constant check causing an error on the settings page.
 
 = 2.1.3 = 
 * Namespacing onMailError function to avoid conflicts with other plugins. Renamed to wppl_on_mail_error_log.
