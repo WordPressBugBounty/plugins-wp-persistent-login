@@ -6,13 +6,13 @@ defined( 'WPINC' ) || die( 'Well, get lost.' );
 
 
 /**
- * Class WP_Persistent_Login_User_Count
+ * Class WP_Persistent_Login_Profile
  *
  * @since 2.0.0
  */
 class WP_Persistent_Login_Profile {
 
-    /**
+	/**
 	 * Initialize the class and set its properties.
 	 *
 	 * We register all our common hooks here.
@@ -219,82 +219,80 @@ class WP_Persistent_Login_Profile {
 
             <?php if( $sessions ) : ?>
 
-                <table class="form-table persistent-login-table persistent-login-manage-sessions">
+                <div class="wppl-table-container">
+                    <table class="wppl-table wppl-manage-sessions wp-list-table widefat fixed striped">
 
-                    <tr class="persistent-login-table-header-row" style="border-bottom: 1px solid #dfdfdf;">
-                        <th width="50%" style="padding-left: 10px;">
-                            <?php _e('Session Details', 'wp-persistent-login' ); ?>
-                        </th>
-                        <th width="25%" style="padding-left: 10px;">
-                            <?php _e('Last Active', 'wp-persistent-login' ); ?>
-                        </th>
-                        <th width="25%" style="padding-left: 10px; text-align: right;">
-                            <?php _e('Manage', 'wp-persistent-login' ); ?>
-                        </th>
-                    </tr>
+                        <thead>
+                            <tr>
+                                <th>
+                                    <?php _e('Session Details', 'wp-persistent-login' ); ?>
+                                </th>
+                                <th>
+                                    <?php _e('Last Active', 'wp-persistent-login' ); ?>
+                                </th>
+                                <th>
+                                    <?php _e('Manage', 'wp-persistent-login' ); ?>
+                                </th>
+                            </tr>
+                        </thead>
 
-                    <?php foreach( $sessions as $session ) : ?>
+                        <tbody>
 
-                        <tr style="border-bottom: 1px solid #dfdfdf;">
+                            <?php foreach( $sessions as $session ) : ?>
 
-                            <td width="50%">
-                                <?php echo $session['device']; ?><br/>
-                                <small>
-                                    <?php 
-                                        _e('IP Address: ', 'wp-persistent-login' );
-                                        echo $session['ip']; 
-                                        
-                                        if( isset($session['location']) ) {
-                                            _e('Approximate location: ', 'wp-persistent-login' );
-                                            echo $session['location'];
-                                        }
-                                    ?> 
-                                </small>
-                            </td>
-                        
-                            <td width="25%">
-                                <?php echo $session['login_time']; ?>
-                                <?php if( $session['current_device'] === true ) : ?>
-                                    <small class="meta">
-                                        <strong>
-                                            <?php _e('(this device)', 'wp-persistent-login' ); ?>
-                                        </strong>
-                                    </small>
-                                <?php endif; ?>
-                            </td>
-                        
-                            <td width="25%">
-                                <label 
-                                    title="<?php _e('End Session', 'wp-persistent-login' ); ?>" 
-                                    style="cursor: pointer;padding: 3px 10px 4px; height: auto;" 
-                                    class="button right persistent-login-end-session-link"
-                                >
-                                    <input 
-                                        type="checkbox" 
-                                        name="endSessions[]" 
-                                        value="<?php echo $session['session_key']; ?>" 
-                                        style="margin: 0 5px 0 0;" 
-                                        title="<?php _e('End Session', 'wp-persistent-login' ); ?>" 
-                                    />
-                                    <?php _e('End Session', 'wp-persistent-login' ); ?>
-                                </label>
-                            </td>
-                        
-                        </tr>
+                                <tr>
 
-                    <?php endforeach; ?>
+                                    <td data-label="<?php echo esc_attr(__('Session Details', 'wp-persistent-login')); ?>">
+                                        <?php echo $session['device']; ?><br/>
+                                        <small class="wppl-table-meta">
+                                            <?php 
+                                                _e('IP Address: ', 'wp-persistent-login' );
+                                                echo $session['ip']; 
+                                                
+                                                if( isset($session['location']) ) {
+                                                    echo '<br/>';
+                                                    _e('Approximate location: ', 'wp-persistent-login' );
+                                                    echo $session['location'];
+                                                }
+                                            ?> 
+                                        </small>
+                                    </td>
+                                
+                                    <td data-label="<?php echo esc_attr(__('Last Active', 'wp-persistent-login')); ?>">
+                                        <?php echo $session['login_time']; ?>
+                                        <?php if( $session['current_device'] === true ) : ?>
+                                            <br/>
+                                            <small class="wppl-current-device">
+                                                <strong>
+                                                    <?php _e('(this device)', 'wp-persistent-login' ); ?>
+                                                </strong>
+                                            </small>
+                                        <?php endif; ?>
+                                    </td>
+                                
+                                    <td data-label="<?php echo esc_attr(__('Manage', 'wp-persistent-login')); ?>">
+                                        <label 
+                                            title="<?php _e('End Session', 'wp-persistent-login' ); ?>" 
+                                            class="button wppl-end-session-btn"
+                                        >
+                                            <input 
+                                                type="checkbox" 
+                                                name="endSessions[]" 
+                                                value="<?php echo $session['session_key']; ?>" 
+                                                title="<?php _e('End Session', 'wp-persistent-login' ); ?>" 
+                                            />
+                                            <?php _e('End Session', 'wp-persistent-login' ); ?>
+                                        </label>
+                                    </td>
+                                
+                                </tr>
 
-                </table>
+                            <?php endforeach; ?>
 
-                <style>
-                    /* css to avoid loading a new stylesheet in the admin area */
-                    .form-table.persistent-login-table { margin-left: 210px; width: calc(100% - 220px); }                    
-                    @media all and ( max-width: 782px ) {
-                        .persistent-login-end-session-link { float: none !important; }
-                        .form-table.persistent-login-table tr { padding: 1rem 0 !important; display: block; } 
-                        .form-table.persistent-login-table { width: 100%; margin-left: 0; }
-                    }
-                </style>
+                        </tbody>
+
+                    </table>
+                </div>
 
             <?php else : ?>
 

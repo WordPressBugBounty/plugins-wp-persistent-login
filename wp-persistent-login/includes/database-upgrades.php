@@ -92,9 +92,9 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
     if ( $persistent_login_db_version === '1.3.10' ) {
         // Use wp_next_scheduled to check if the event is already scheduled
         $timestamp = wp_next_scheduled( 'persistent_login_user_count' );
-        // If $timestamp == false schedule daily backups since it hasn't been done previously
+        // If $timestamp == false schedule the user count since it hasn't been done previously
         if ( $timestamp == false ) {
-            // Schedule the event for right now, then to repeat daily using the hook 'persistent_login_user_count'
+            // Schedule the event for right now, then to repeat twice daily using the hook 'persistent_login_user_count'
             wp_schedule_event( time(), 'twicedaily', 'persistent_login_user_count' );
         }
         // update db version option

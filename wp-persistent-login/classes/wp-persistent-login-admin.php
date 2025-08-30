@@ -55,8 +55,7 @@ class WP_Persistent_Login_Admin {
 	 *
 	 * @since 2.0.0
 	 * @return void
-	 */
-	public function create_menu_page() {
+	 */	public function create_menu_page() {
 
 		add_submenu_page( 
 			'users.php', 
@@ -64,14 +63,31 @@ class WP_Persistent_Login_Admin {
 			'Persistent Login', 
 			'administrator',
 			'wp-persistent-login', 
-			array(new WP_Persistent_Login_Settings, 'persistent_login_options_display')
+			array($this, 'display_settings_page')
 		); 
 	
-	} 
-
-
-
-
+	}
+    /**
+     * Display the settings page content based on the current tab
+     * 
+     * @since 2.2.0
+     * @return void
+     */
+    public function display_settings_page() {
+        $default_tab = NULL;
+        $tab = isset($_GET['tab']) ? $_GET['tab'] : $default_tab;
+        
+        $dashboard = new WP_Persistent_Login_Dashboard();
+          if ($tab === 'persistent-login') {
+            $dashboard->display_persistent_login_settings();
+        } elseif ($tab === 'active_logins') {
+            $dashboard->display_active_logins_settings();
+        } elseif ($tab === 'login_history') {
+            $dashboard->display_login_history_settings();
+        } else {
+            $dashboard->display_dashboard();
+        }
+    }
 }
 
 ?>

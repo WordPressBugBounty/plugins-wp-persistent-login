@@ -17,6 +17,12 @@ class WP_Persistent_Login_Active_Logins {
 	 */
 	public function __construct() {
 
+        // Check if the active logins feature is enabled.
+        $featureOptions = get_option( 'persistent_login_feature_options', array() );
+        if( !isset($featureOptions['enable_active_logins']) || $featureOptions['enable_active_logins'] !== '1' ) {
+            return; // stop processing if active logins is not enabled
+        }
+
         if( !isset($this->limit) ) {
             $this->limit = 1;
         }

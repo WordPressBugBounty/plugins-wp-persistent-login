@@ -92,6 +92,91 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
     
     }
 
+    /**
+     * get_persistent_login_roles
+     * 
+     * Gets the roles that have persistent login enabled.
+     * In free version, all roles have persistent login.
+     * In premium version, it depends on user settings.
+     *
+     * @since 2.3.0
+     * @return array
+     */
+    private function get_persistent_login_roles() {
+        
+        // If premium version is active, get from settings
+        if( WPPL_PR === true && class_exists('WP_Persistent_Login_Settings_Premium') ) {
+            $premium_settings = new WP_Persistent_Login_Settings_Premium();
+            $persistent_roles = $premium_settings->get_login_user_roles();
+            
+            // If no roles are set in premium, default to all roles
+            if( empty($persistent_roles) ) {
+                return $this->get_all_wp_roles();
+            }
+            
+            return $persistent_roles;
+        }
+        
+        // Free version - all roles have persistent login
+        return $this->get_all_wp_roles();
+    }
+
+    /**
+     * get_all_wp_roles
+     * 
+     * Gets all WordPress user roles as an array of role keys.
+     *
+     * @since 2.3.0
+     * @return array
+     */
+    private function get_all_wp_roles() {
+        
+        $roles = [];
+        $wp_roles = wp_roles();
+        
+        foreach( $wp_roles->roles as $key => $value ) {
+            $roles[] = $key;
+        }
+        
+        return $roles;
+    }
+
+    /**
+     * is_role_persistent_login
+     * 
+     * Checks if a specific role has persistent login enabled.
+     *
+     * @since 2.3.0
+     * @param string $role The role to check
+     * @return bool
+     */
+    private function is_role_persistent_login( $role ) {
+        
+        $persistent_roles = $this->get_persistent_login_roles();
+        return in_array( $role, $persistent_roles );
+    }
+
+    /**
+     * get_roles_persistent_status
+     * 
+     * Gets an array of all roles with their persistent login status.
+     *
+     * @since 2.3.0
+     * @return array Associative array with role => boolean pairs
+     */
+    public function get_roles_persistent_status() {
+        
+        $all_roles = $this->get_all_wp_roles();
+        $persistent_roles = $this->get_persistent_login_roles();
+        $status = array();
+        
+        foreach( $all_roles as $role ) {
+            $status[$role] = in_array( $role, $persistent_roles );
+        }
+        
+        return $status;
+    }
+
 
     /**
 	 * is_user_count_running
@@ -109,15 +194,14 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
 	}
 
-    
-    /**
+      /**
      * get_current_counting_role
      * 
      * Gets the current user role being counted
      *
      * @return string
      */
-    private function get_current_counting_role() {
+    public function get_current_counting_role() {
         
         $current_role = get_transient('persistent_login_user_count_current_role') ?: NULL;
 
@@ -147,7 +231,9 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 			$current_role = str_replace('_', ' ', ucfirst($current_role));
 
             return sprintf(
-                __('User count is currently running. Figures below will update once the count has completed. The %s role is being counted now.', 'wp-persistent-login' ),
+                __('The logged in user count is currently running. ', 'wp-persistent-login' ) .
+                '<br/>' .
+                __('The %s role is being counted now.', 'wp-persistent-login' ),
                 $current_role
             );
 		
@@ -177,6 +263,150 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
     }
 
 
+    /**
+	 * is_user_count_cron_scheduled
+	 * 
+	 * Checks if the main user count cron job is properly scheduled.
+	 *
+	 * @since 2.1.5
+	 * @return bool
+	 */
+	public function is_user_count_cron_scheduled() {
+		
+		$timestamp = wp_next_scheduled( 'persistent_login_user_count' );
+		
+        return $timestamp !== false;
+	
+    }
+
+
+    /**
+	 * is_update_count_cron_scheduled
+	 * 
+	 * Checks if the update count cron job is properly scheduled.
+	 *
+	 * @since 2.1.5
+	 * @return bool
+	 */
+	public function is_update_count_cron_scheduled() {
+		
+		$timestamp = wp_next_scheduled( 'persistent_login_update_count' );
+		
+        return $timestamp !== false;
+	
+    }
+
+
+    /**
+	 * get_cron_status
+	 * 
+	 * Returns the status of both cron jobs used for user counting.
+	 *
+	 * @since 2.1.5
+	 * @return array
+	 */
+	public function get_cron_status() {
+		
+		$main_cron_scheduled = $this->is_user_count_cron_scheduled();
+		$update_cron_scheduled = $this->is_update_count_cron_scheduled();
+		$is_count_running = $this->is_user_count_running();
+		
+		return array(
+			'main_cron_scheduled' => $main_cron_scheduled,
+			'update_cron_scheduled' => $update_cron_scheduled,
+			'is_count_running' => $is_count_running,
+			'next_main_cron' => $main_cron_scheduled ? $this->get_next_count_time() : false,
+			'next_update_cron' => $update_cron_scheduled ? wp_next_scheduled( 'persistent_login_update_count' ) : false
+		);
+	
+    }
+
+
+    /**
+	 * is_main_cron_overdue
+	 * 
+	 * Checks if the main user count cron job is overdue (should run twice daily).
+	 *
+	 * @since 2.1.5
+	 * @return bool
+	 */
+	public function is_main_cron_overdue() {
+		
+		$next_cron = $this->get_next_count_time();
+		
+		// If no cron is scheduled, it's overdue
+		if ( $next_cron === false ) {
+			return true;
+		}
+		
+		// If the next cron time has passed, it's overdue
+		if ( $next_cron < time() ) {
+			return true;
+		}
+		
+		return false;
+	
+    }
+
+
+    /**
+	 * fix_cron_schedule
+	 * 
+	 * Attempts to fix the cron schedule if it's missing or overdue.
+	 *
+	 * @since 2.1.5
+	 * @return bool Returns true if scheduling was successful
+	 */
+	public function fix_cron_schedule() {
+		
+		// Check if the main cron job is scheduled
+		$timestamp = wp_next_scheduled( 'persistent_login_user_count' );
+		
+		// If not scheduled or overdue, schedule it now
+		if( $timestamp === false || $this->is_main_cron_overdue() ) {
+			
+			// Clear any existing schedule first
+			wp_clear_scheduled_hook( 'persistent_login_user_count' );
+			
+			// Schedule the event to run twice daily
+			$result = wp_schedule_event( time(), 'twicedaily', 'persistent_login_user_count' );
+			
+			return $result !== false;
+		}
+		
+		return true;
+	
+    }
+
+
+    /**
+	 * force_start_count
+	 * 
+	 * Forces the user count to start immediately, regardless of schedule.
+	 * Used for manual refresh functionality.
+	 *
+	 * @since 2.1.5
+	 * @return bool Returns true if count was started successfully
+	 */
+	public function force_start_count() {
+		
+		// If a count is already running, stop it first
+		if( $this->is_user_count_running() ) {
+			$this->stop_count();
+		}
+		
+		// Ensure the main cron job is scheduled
+		$this->fix_cron_schedule();
+		
+		// Start the count immediately
+		$this->start_count();
+		
+		// Verify the count started
+		return $this->is_user_count_running();
+	
+    }
+
+
 
     /**
 	 * get_next_count_difference
@@ -186,7 +416,7 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	 * @since 2.0.0
 	 * @return int
 	 */
-	private function get_next_count_time_difference() {
+	public function get_next_count_time_difference() {
 		
 		$time_now = time();
 		$next_check = $this->get_next_count_time();
@@ -238,7 +468,7 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
 		return sprintf( 
 			__(
-				'<strong>%d %s</strong> %s being kept logged into your website.', 
+				'%d %s %s being kept logged into your website.', 
 				 'wp-persistent-login' ), 
 			$user_count,
 			$plural_user,
@@ -261,12 +491,16 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
 		$user_count = $this->get_last_login_count(); 
 
-		return sprintf( 
-			__(
-				'User count is currently running. The previous loggged in user count was %d.', 
-				 'wp-persistent-login' ), 
-			$user_count
-		); 
+		if( $user_count !== false && $user_count > 0 ) {
+			return sprintf( 
+				__(
+					'User count is currently running. The previous logged in user count was %d.', 
+					 'wp-persistent-login' ), 
+				$user_count
+			); 
+		} else {
+			return __( 'User count is currently running.', 'wp-persistent-login' );
+		}
 
 	}
 
@@ -282,8 +516,15 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	 * @return array|bool
 	 */
 	private function get_user_count_breakdown() {
-				
-		$user_count = get_option('persistent_login_user_count');
+		
+		// If a count is currently running, prioritize the temporary count
+		if( $this->is_user_count_running() ) {
+			$user_count = get_transient( 'persistent_login_user_count_temporary');
+		} else {
+			// If no count is running, use the permanent count (last completed count)
+			$user_count = get_option('persistent_login_user_count');
+		}
+
         if( $user_count ) {
             return $user_count;
         } else {
@@ -313,7 +554,7 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	 * output_user_count_breakdown
 	 * 
 	 * Outputs HTML to display the number of users logged in, 
-	 * broken down by their Role.
+	 * broken down by their Role with visual indicators for persistent vs normal login.
 	 *
 	 * @since 2.0.0
 	 * @return string
@@ -321,17 +562,42 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	public function output_user_count_breakdown() {
 
 		$breakdown = $this->get_user_count_breakdown();
+        $current_counting_role = $this->get_current_counting_role();
 	
 		if( $breakdown && !empty($breakdown) ) :
 
-			foreach( $breakdown as $key=>$value ) : ?>
-				<div style="width: 250px; max-width: 45%; float: left; display: block; float: left;">
-					<?php echo str_replace(['_', '-'], ' ', ucfirst($key)); ?>: 
-					<strong><?php echo $value; ?></strong>
-				</div>
+			foreach( $breakdown as $key=>$value ) : 
+                $is_current_counting_role = ($key === $current_counting_role) ? 'current-counting-role' : '';
+                $is_persistent = $this->is_role_persistent_login($key);
+                $persistent_class = $is_persistent ? 'persistent-login' : 'normal-login';
+                
+                // Create title attribute for explanation
+                if( $is_persistent ) {
+                    $title = sprintf(
+                        __('%s users have persistent login enabled - they stay logged in automatically', 'wp-persistent-login'),
+                        str_replace(['_', '-'], ' ', ucfirst($key))
+                    );
+                    $icon = '<span class="login-type-icon persistent" aria-hidden="true">🔒</span>';
+                } else {
+                    $title = sprintf(
+                        __('%s users have standard WordPress login duration - they must log in again after expiry', 'wp-persistent-login'),
+                        str_replace(['_', '-'], ' ', ucfirst($key))
+                    );
+                    $icon = '<span class="login-type-icon normal" aria-hidden="true">⏱️</span>';
+                }
+                ?>
+				<p class="role <?php echo $is_current_counting_role; ?> <?php echo $persistent_class; ?>" 
+                   data-role="<?php echo esc_attr($key); ?>" 
+                   title="<?php echo esc_attr($title); ?>">
+                    <?php echo $icon; ?>
+					<span class="key">
+                        <?php echo str_replace(['_', '-'], ' ', ucfirst($key)); ?>: 
+                    </span>
+					<span class="value"><?php echo $value; ?></span>
+                </p>
 			<?php endforeach; ?>
 			<div style="clear: both; display: block;"></div>
-
+            
 		<?php else : ?>
 		
 			<p>
@@ -407,17 +673,10 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
 			$next_count = $this->get_next_count_time_difference();
 			if( $next_count ) : 
-				?>
-
-				<p style="color: #9e9e9e;">
-					<?php 
-					printf( 
-						__('Next automated logged in count: Approximately %d hours', 'wp-persistent-login' ),
-						$next_count
-					); ?>
-				</p>
-			    
-                <?php
+                printf( 
+                    __('Next automated logged in count: Approximately %d hours', 'wp-persistent-login' ),
+                    $next_count
+                ); 
             endif;
             
         endif;
@@ -518,10 +777,19 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
                             
                 // If $timestamp == false, schedule the count now since it hasn't been started yet
                 if( $timestamp == false ) {
-                    // Schedule the event for right now, then to repeat daily using the hook 'persistent_login_update_count'
-                    wp_schedule_event( time()+MINUTE_IN_SECONDS, 'minutely', 'persistent_login_update_count');
+                    // Schedule the event for right now, then to repeat minutely using the hook 'persistent_login_update_count'
+                    $update_scheduled = wp_schedule_event( time()+MINUTE_IN_SECONDS, 'minutely', 'persistent_login_update_count');
+                    
+                    // Log if scheduling failed
+                    if( $update_scheduled === false ) {
+                        error_log( 'WP Persistent Login: Failed to schedule persistent_login_update_count cron job' );
+                    }
                 }
 
+            } else {
+                // No allowed roles found, stop the count
+                $this->stop_count();
+                error_log( 'WP Persistent Login: No allowed roles found for user count' );
             }
 
         }
@@ -624,13 +892,18 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
         // move the temporary count to the main count
         $temporary_user_count = get_transient('persistent_login_user_count_temporary');
         $this->update_user_count_breakdown($temporary_user_count);
+        
+        // Save the total count for last count display
+        if( is_array($temporary_user_count) && !empty($temporary_user_count) ) {
+            $total_count = array_sum($temporary_user_count);
+            set_transient('persistent_login_last_count', $total_count, 0);
+        }
 
         // we're done, clean up transients
         delete_transient('persistent_login_user_count_current_role');
         delete_transient('persistent_login_user_count_offset');
         delete_transient('persistent_login_user_count_running');
         delete_transient('persistent_login_allowed_roles_reference');
-        delete_transient('persistent_login_last_count');
         delete_transient('persistent_login_user_count_temporary');
     
         // stop the minutely count task so we stop counting users

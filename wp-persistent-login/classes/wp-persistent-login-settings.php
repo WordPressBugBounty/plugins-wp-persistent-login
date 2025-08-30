@@ -50,13 +50,14 @@ class WP_Persistent_Login_Settings {
         if( isset($this->message) && isset($this->type) ) {
             add_action('admin_init', array($this, 'show_message'));
         }
-
 		// enqueue admin js if on the settings page
 		add_action( 'admin_enqueue_scripts', array($this, 'enqueue_admin_js') );
         
-		
+        // Register AJAX handlers for feature toggles
+        add_action( 'wp_ajax_wppl_toggle_feature', array( $this, 'ajax_toggle_feature' ) );
+        add_action( 'wp_ajax_wppl_get_user_count_status', array( $this, 'ajax_get_user_count_status' ) );
+        
 	}
-
 
 	/**
 	 * enqueue_admin_js
@@ -64,45 +65,57 @@ class WP_Persistent_Login_Settings {
 	 * Enqueue a script in the WordPress admin on users.php?page=wp-persistent-login
 	 *
 	 * @return void
-	 */
-	public function enqueue_admin_js( $hook ) {
+	 */	public function enqueue_admin_js( $hook ) {
 
 		if( $hook !== 'users_page_wp-persistent-login' ) {
 			return;
 		}
 		wp_enqueue_script( 'wppl_admin_controls', WPPL_PLUGIN_URL . '/js/admin-controls.js', array('jquery'), '1.0' );
-
+		wp_enqueue_style( 'wppl_dashboard_styles', WPPL_PLUGIN_URL . '/css/dashboard.css', array(), '1.0' );
+        
+        // Add nonce for AJAX requests
+        wp_localize_script( 'wppl_admin_controls', 'wppl_nonce', wp_create_nonce( 'wppl_feature_toggle_nonce' ) );
 	}
-
     
     /**
-     * redirect_with_message
-     *
-     * @param  string $url
-     * @param  int $status_code
-     * @param  string $message
-     * @param  string $type
-     * @return void
+     * AJAX handler for toggling features on/off
      */
-    public function redirect_with_message($url = '', $status_code = 302, $message = '', $type = 'updated') {
-
-        // check if the url already has query strings - ?
-        $query_string_search = strpos($url, '?');
-        if( $query_string_search === false ) {
-            $query_string = '?'; // if it doesn't, use it to being our query string
-        } else {
-            $query_string = '&'; // if it does, add ours onto the end
+    public function ajax_toggle_feature() {
+        // Check nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wppl_feature_toggle_nonce' ) ) {
+            wp_send_json_error( array( 'message' => 'Security check failed' ) );
         }
-
-        $message = urlencode($message);
-        $redirect_url = "$url$query_string$this->message_key=$message&$this->type_key=$type";
         
-        if ( wp_safe_redirect( $redirect_url, $status_code ) ) {
-            exit;
+		// Get POST data
+		$feature = isset( $_POST['feature'] ) ? sanitize_text_field( $_POST['feature'] ) : '';
+		$option_name = isset( $_POST['option_name'] ) ? sanitize_text_field( $_POST['option_name'] ) : '';
+		// Always store as string
+		$enabled = isset( $_POST['enabled'] ) ? (string) $_POST['enabled'] : '0';
+        
+		if ( empty( $feature ) || empty( $option_name ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid feature data' ) );
+		}
+        
+		// Get current options
+		$options = get_option( 'persistent_login_feature_options', array() );
+        
+		// Update option, always as string
+		$options[$option_name] = $enabled;
+        
+		// Save updated options
+		$updated = update_option( 'persistent_login_feature_options', $options );
+        
+        if ( $updated ) {
+            wp_send_json_success( array( 
+                'message' => sprintf( __( '%s has been %s', 'wp-persistent-login' ), 
+                    ucfirst( str_replace( '_', ' ', $feature ) ),
+                    $enabled ? __( 'enabled', 'wp-persistent-login' ) : __( 'disabled', 'wp-persistent-login' )
+                ) 
+            ) );
+        } else {
+            wp_send_json_error( array( 'message' => __( 'Failed to update settings', 'wp-persistent-login' ) ) );
         }
-
     }
-
 
     /**
 	 * show_message
@@ -202,19 +215,22 @@ class WP_Persistent_Login_Settings {
      * update_general_settings
      *
      * @return void
-     */
-    protected function update_general_settings($post_data) {
+     */    
+	protected function update_general_settings($post_data) {
 
         // update control for hiding dashboard stats
         $this->update_dashboard_stats($post_data);
 
         // update control for plugin specific logic
         $this->update_duplicate_sessions($post_data);
-
+        
+        // Redirect with success message
+        $redirect_url = isset($post_data['_wp_http_referer']) ? esc_url_raw($post_data['_wp_http_referer']) : admin_url('users.php?page=wp-persistent-login&tab=persistent-login');
+        $message = __('Settings saved successfully!', 'wp-persistent-login');
+        $this->redirect_with_message($redirect_url, 302, $message, 'updated');
     }
 
-	
-	/**
+		/**
 	 * update_active_login_settings
 	 *
 	 * @param  mixed $post_data
@@ -222,12 +238,19 @@ class WP_Persistent_Login_Settings {
 	 */
 	protected function update_active_login_settings($post_data) {
 
+		// Verify nonce
+        check_admin_referer('update_active_login_settings_action', 'update_active_login_settings_nonce');
+
 		// update user preferences for active logins
 		$this->update_limit_active_logins($post_data);
 
 		// update the logic when login limit is reached
         $this->update_limit_reached_logic($post_data);
 		
+		// Redirect with success message
+        $redirect_url = isset($post_data['_wp_http_referer']) ? esc_url_raw($post_data['_wp_http_referer']) : admin_url('users.php?page=wp-persistent-login&tab=active_logins');
+        $message = __('Active login settings saved successfully!', 'wp-persistent-login');
+        $this->redirect_with_message($redirect_url, 302, $message, 'updated');
 	}
 
 	
@@ -238,8 +261,12 @@ class WP_Persistent_Login_Settings {
 	 * @return void
 	 */
 	protected function update_login_history_settings($post_data) {
+		// Verify nonce
+        check_admin_referer('update_login_history_settings_action', 'update_login_history_settings_nonce');
 
 		$this->update_login_history($post_data);
+
+		$this->update_display_user_login_history($post_data);
 
 		$this->update_notify_new_logins($post_data);
 
@@ -247,6 +274,10 @@ class WP_Persistent_Login_Settings {
 
 		$this->update_notification_email_template($post_data);
 
+		// Redirect with success message
+        $redirect_url = isset($post_data['_wp_http_referer']) ? esc_url_raw($post_data['_wp_http_referer']) : admin_url('users.php?page=wp-persistent-login&tab=login_history');
+        $message = __('Login history settings saved successfully!', 'wp-persistent-login');
+        $this->redirect_with_message($redirect_url, 302, $message, 'updated');
 	}
 
     
@@ -410,8 +441,6 @@ class WP_Persistent_Login_Settings {
 
     }
 
-
-
     /**
      * update_limit_reached_logic
      *
@@ -422,7 +451,7 @@ class WP_Persistent_Login_Settings {
 
         if( isset($post_data['activeLoginLogic']) ) : 
 							    
-            $logic = $post_data['activeLoginLogic'];
+            $logic = sanitize_text_field($post_data['activeLoginLogic']);
             $options = $this->get_persistent_login_options();
             $options['activeLoginLogic'] = $logic;
 
@@ -430,6 +459,7 @@ class WP_Persistent_Login_Settings {
 
         endif;
 
+        return false;
     }
 
 	
@@ -485,6 +515,49 @@ class WP_Persistent_Login_Settings {
     }
 
 
+	/**
+	 * get_display_user_login_history
+	 *
+	 * @return string
+	 */
+	public function get_display_user_login_history() {
+
+		$options = $this->get_persistent_login_options();
+        if( isset( $options['displayUserLoginHistory'] ) ) {
+            $display_user_login_history = $options['displayUserLoginHistory'];
+        } else {
+            $display_user_login_history = '0';
+        }
+
+        return $display_user_login_history;
+
+	}
+
+
+	/**
+     * update_display_user_login_history
+     *
+     * @param  array $post_data
+     * @return bool
+     */
+    protected function update_display_user_login_history($post_data) {
+
+		$options = $this->get_persistent_login_options();
+
+        if( isset($post_data['displayUserLoginHistory']) ) {
+            $display_user_login_history = $post_data['displayUserLoginHistory'];
+		} else {
+			$display_user_login_history = '0';
+        }
+
+		// update the option
+		$options['displayUserLoginHistory'] = $display_user_login_history;
+
+		return update_option('persistent_login_options', $options);
+
+    }
+
+
 	
 	/**
 	 * get_notify_new_logins
@@ -513,6 +586,16 @@ class WP_Persistent_Login_Settings {
 	protected function update_notify_new_logins($post_data) {
 
 		$options = $this->get_persistent_login_options();
+		
+		if( isset($post_data['notifyNewLogins']) ) {
+            $notify_new_logins = sanitize_text_field($post_data['notifyNewLogins']);
+        } else {
+            $notify_new_logins = '0';
+        }
+        
+        $options['notifyNewLogins'] = $notify_new_logins;
+        
+        return update_option('persistent_login_options', $options);
         if( isset($post_data['notifyNewLogins']) ) {
             $notify_new_logins = $post_data['notifyNewLogins'];
 		} else {
@@ -590,8 +673,8 @@ Thanks,
 	 */
 	protected function update_notification_email_subject($post_data) {
 
-		if( isset($post_data['notificationEmailSubject']) ) {
-			$notification_email_subject = $post_data['notificationEmailSubject'];
+		if( isset($post_data['notification_email_subject']) ) {
+			$notification_email_subject = sanitize_text_field($post_data['notification_email_subject']);
 		} else {
 			$notification_email_subject = '';
 		}
@@ -608,13 +691,13 @@ Thanks,
 	 */
 	protected function update_notification_email_template($post_data) {
 
-        if( isset($post_data['notificatioinEmailTemplate']) ) {
-            $notificatioin_email_template = $post_data['notificatioinEmailTemplate'];
+        if( isset($post_data['notification_email_template']) ) {
+            $notification_email_template = $post_data['notification_email_template'];
 		} else {
-			$notificatioin_email_template = '';
+			$notification_email_template = '';
         }
 
-		return update_option('persistent_login_notification_email_template', $notificatioin_email_template);
+		return update_option('persistent_login_notification_email_template', $notification_email_template);
 
 	}
 
@@ -799,106 +882,12 @@ Thanks,
 									 'wp-persistent-login' ); 
 							?>
 						</p>
-						<?php $this->output_login_count_meta_box(); ?>
-
+						<?php $this->output_login_count_meta_box(); ?>							<?php elseif( $tab === 'persistent-login' ) : ?>
 					
-					<?php elseif( $tab === 'persistent-login' ) : ?>
-					
-						<h1>
-							<?php 
-								_e(
-									'Persistent Login Settings', 
-									 'wp-persistent-login' ); 
-							?>
-						</h1>
-						<p>
-							<?php 
-								_e(
-									'Control how users are kept logged into your website over time.', 
-									 'wp-persistent-login' ); 
-							?>
-						</p>
-						<form method="POST">
-					
-							<input type="hidden" name="wppl_method" value="update_general_settings" />
-							<?php wp_nonce_field( 'update_general_settings_action', 'update_general_settings_nonce' ); ?>
-							
-							<table class="form-table">
-								<tbody>   
-
-									<!-- logged in time -->						
-									<tr style="border-bottom: 1px solid #dfdfdf;">
-									
-										<th>
-											<?php _e('Keep users logged in for', 'wp-persistent-login' ); ?>
-										</th>
-										<td>
-											<?php _e('365 days', 'wp-persistent-login' ); ?>
-											<p class="description">
-												<small>
-													<?php _e('To change the remember me duration and which roles it applies to, please consider upgrading.', 'wp-persistent-login' ); ?>
-												</small>
-											</p>
-										</td>
-									</tr>
-									<!-- END loggedin time -->
-							
-							
-									<!-- dashboard at a glance screen -->						
-									<tr style="border-bottom: 1px solid #dfdfdf;">
-									
-										<th><br/>
-											<?php _e('Dashboard panel options', 'wp-persistent-login' ); ?><br/>
-										</th>
-										<td>
-											<br/>
-											<label style="width: auto; display: inline-block;">
-												<?php $hide_dashboard_stats = $this->get_dashboard_stats(); ?> 
-												<input 
-													name="hidedashboardstats" id="hidedashboardstats" type="checkbox" value="1" 
-													class="regular-checkbox" <?php echo ($hide_dashboard_stats !== '0') ? 'checked' : ''; ?>
-												/> 
-												<?php _e('Hide \'At a glance\' dashboard stats', 'wp-persistent-login' ); ?>
-											</label><br/>
-											<br/>
-										</td>
-									</tr>
-									<!-- END dashboard at a glance screen -->							
-							
-									<!-- allow duplicate sessions -->
-									<?php $duplicate_sessions = $this->get_duplicate_sessions(); ?> 
-									<tr style="border-bottom: 1px solid #dfdfdf;">
-										<th>
-											<br/> 
-											<?php _e('Duplicate sessions', 'wp-persistent-login' ); ?><br/>
-										</th>
-										<td>
-											<br/>
-											<label style="width: auto; display: inline-block;">
-												<input 
-													name="duplicateSessions" id="duplicateSessions" type="checkbox" value="1" 
-													class="regular-checkbox" <?php echo ($duplicate_sessions === '0' || $duplicate_sessions === NULL ) ? '' : 'checked'; ?>
-												/>
-												<?php _e('Allow duplicate sessions', 'wp-persistent-login' ); ?>
-											</label><br/>
-											<p class="description">
-												<small>
-													<?php _e('(select if you\'re having trouble staying logged in on multiple devices)', 'wp-persistent-login' ); ?>
-												</small>
-											</p>
-										</td> 
-									</tr>
-									<!-- END allow duplicate sessions -->										              
-						
-								</tbody>
-							</table>
-							<p class="submit">
-								<input 
-									type="submit" name="submit" id="submit" class="button button-primary" 
-									value="<?php _e('Save Persistent Login Settings', 'wp-persistent-login' ); ?>"
-								>
-							</p>
-						</form>
+						<?php 
+							$dashboard = new WP_Persistent_Login_Dashboard();
+							$dashboard->display_persistent_login_settings(); 
+						?>
 					
 					<?php elseif( $tab === 'active-logins' ) : ?>
 					
@@ -1235,8 +1224,79 @@ Thanks,
 	
 		
 	} // end persistent_login_options_display	 
+	    /**
+     * AJAX handler for getting user count status
+     */    public function ajax_get_user_count_status() {
+        // Check nonce for security
+        if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wppl_feature_toggle_nonce' ) ) {
+            wp_send_json_error( array( 'message' => 'Security check failed' ) );
+        }
+        
+        $user_count = new WP_Persistent_Login_User_Count();
+        $is_counting = $user_count->is_user_count_running();
+        
+        if (!$is_counting) {
+            wp_send_json_success(array(
+                'is_counting' => false
+            ));
+            return;
+        }
+        
+        // Get current role being counted
+        $current_role = $user_count->get_current_counting_role();
+        $current_role_message = $user_count->output_current_counting_role();
+        
+        // Get current temporary count data
+        $temp_counts = get_transient('persistent_login_user_count_temporary');
+        $final_counts = get_option('persistent_login_user_count');
+        
+        // Merge temporary counts with the final counts
+        $role_counts = $final_counts;
+        if (is_array($temp_counts)) {
+            foreach ($temp_counts as $role => $count) {
+                if (isset($role_counts[$role])) {
+                    $role_counts[$role] = $count;
+                }
+            }
+        }
+        
+        // Log data for debugging
+        error_log('WPPL Count Status - Current role: ' . $current_role);
+        error_log('WPPL Count Status - Roles: ' . print_r(array_keys($role_counts), true));
+        
+        wp_send_json_success(array(
+            'is_counting' => true,
+            'current_role' => $current_role,
+            'current_role_message' => $current_role_message,
+            'role_counts' => $role_counts
+        ));
+    }
 	
-
+	/**
+     * redirect_with_message
+     *
+     * Redirects the user with a message
+     * 
+     * @param string $redirect_url The URL to redirect to
+     * @param int $code The HTTP code to use for the redirect
+     * @param string $message The message to display
+     * @param string $type The message type (error, updated, etc.)
+     * @return void
+     */
+    protected function redirect_with_message($redirect_url, $code = 302, $message = '', $type = 'updated') {
+        // Add query parameters for message and type
+        $redirect_url = add_query_arg(
+            array(
+                'wppl-msg' => urlencode($message),
+                'type' => $type
+            ),
+            $redirect_url
+        );
+        
+        // Perform the redirect
+        wp_redirect($redirect_url, $code);
+        exit;
+    }
 }
 
 ?>

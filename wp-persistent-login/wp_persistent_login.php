@@ -9,7 +9,7 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 2.1.4
+ *   Version: 3.0.0
  *
  *
  */
@@ -43,10 +43,12 @@ if ( function_exists( 'persistent_login' ) ) {
     define( 'WPPL_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
     define( 'WPPL_SETTINGS_AREA', get_admin_url() . 'users.php' );
     define( 'WPPL_SETTINGS_PAGE', WPPL_SETTINGS_AREA . '?page=wp-persistent-login' );
-    define( 'WPPL_ACCOUNT_PAGE', WPPL_SETTINGS_AREA . '?page=wp-persistent-login-account' );
+    define( 'WPPL_ACCOUNT_PAGE', get_admin_url() . 'admin.php?page=wp-persistent-login-account' );
     define( 'WPPL_UPGRADE_PAGE', WPPL_SETTINGS_AREA . '?billing_cycle=annual&page=wp-persistent-login-pricing' );
-    define( 'WPPL_SUPPORT_PAGE', WPPL_SETTINGS_AREA . '?page=wp-persistent-login-contact' );
-    define( 'WPPL_TEXT_DOMAIN', 'wp-persitent-login' );
+    define( 'WPPL_REVIEW_PAGE', 'https://wordpress.org/support/plugin/wp-persistent-login/reviews/#new-post' );
+    define( 'WPPL_TEXT_DOMAIN', 'wp-persistent-login' );
+    // load composor packages.
+    require_once WPPL_PLUGIN_PATH . '/vendor/autoload.php';
     // Load text domain
     add_action( 'init', 'wp_persistent_login_load_textdomain' );
     function wp_persistent_login_load_textdomain() {
@@ -54,20 +56,21 @@ if ( function_exists( 'persistent_login' ) ) {
     }
 
     // Load freemius.
-    require WPPL_PLUGIN_PATH . '/includes/freemius.php';
+    require_once WPPL_PLUGIN_PATH . '/includes/freemius.php';
     // Load installation file.
-    require WPPL_PLUGIN_PATH . '/includes/install.php';
+    require_once WPPL_PLUGIN_PATH . '/includes/install.php';
     register_activation_hook( __FILE__, 'persistent_login_activate' );
     // Load database upgrade file.
-    require WPPL_PLUGIN_PATH . '/includes/database-upgrades.php';
+    require_once WPPL_PLUGIN_PATH . '/includes/database-upgrades.php';
     // Load uninstall cleanup file.
-    require WPPL_PLUGIN_PATH . '/includes/uninstall.php';
+    require_once WPPL_PLUGIN_PATH . '/includes/uninstall.php';
     persistent_login()->add_action( 'after_uninstall', 'persistent_login_uninstall_cleanup' );
-    // load composor packages.
-    require WPPL_PLUGIN_PATH . '/vendor/autoload.php';
     // autoload wp persistent login classes.
-    require WPPL_PLUGIN_PATH . '/classes/autoload.php';
-    define( 'WPPL_PR', false );
+    require_once WPPL_PLUGIN_PATH . '/classes/autoload.php';
+    // secondary definitions used throughout application.
+    $wppl_pr_enabled = false;
+    define( 'WPPL_PR', $wppl_pr_enabled );
+    define( 'WPPL_SUPPORT_PAGE', 'https://wordpress.org/support/plugin/wp-persistent-login/' );
     new WP_Persistent_Login();
     new WP_Persistent_Login_Admin();
     new WP_Persistent_Login_Profile();

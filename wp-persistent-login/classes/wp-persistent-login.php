@@ -27,6 +27,12 @@ class WP_Persistent_Login {
 	public function __construct() {
 
 		$this->expiration = YEAR_IN_SECONDS;
+
+		// check if persistent login feature is enabled
+		$featureOptions = get_option( 'persistent_login_feature_options', array() );
+		if( !isset($featureOptions['enable_persistent_login']) || $featureOptions['enable_persistent_login'] !== '1' ) {
+			return; // stop processing if persistent login is not enabled
+		}
 		
 		// set the expiration time when a user logs in
 		add_filter( 'auth_cookie_expiration', array( $this, 'set_login_expiration' ), 10, 3 );
@@ -197,115 +203,136 @@ class WP_Persistent_Login {
 	 * @since  1.0.0
 	 * @access public
 	 *
-	 * @return NULL
+	 * @return void
 	 */
 	public function precheck_remember_me() {
 			
-				
-		$script = '<script>';
-		$script .= "
+		// Default remember me input names that can be filtered
+		$remember_me_input_names = array('rememberme', 'remember', 'rcp_user_remember');
+		
+		/**
+		 * Filter to allow adding custom remember me input names for pre-checking
+		 *
+		 * @param array $remember_me_input_names Array of input names to pre-check
+		 * @since 1.0.0
+		 */
+		$remember_me_input_names = apply_filters( 'wppl_precheck_remember_me_names', $remember_me_input_names );
 
-			var wppl_precheck_remember_me = function() {
-
-				// check remember me by default
-				var forms = document.querySelectorAll('form'); 						
-				if (forms) {
-
-					var rememberMeNames = ['rememberme', 'remember', 'rcp_user_remember'];
-					var rememberArray = [];
-
-					// loop through each remember me name and see if there's a field that matches
-					for( z = 0; z < rememberMeNames.length; z++ ) {
-						var input = document.getElementsByName( rememberMeNames[z] );
-						if( input.length ) {
-							rememberArray.push(input);
-						}
-					}
-					
-					// if there are remember me inputs
-					if( rememberArray.length ) { 	
-					
-						// 'check' the inputs so they're active		
-							for (i = 0; i < rememberArray.length; i++) {
-								for (x = 0; x < rememberArray[i].length; x++) {
-								  rememberArray[i][x].checked = true;
-								}
-							}
-					
-					}
-
-					
-					// test for Ultimate Member Plugin forms
-						
-						// find the UM checkboxes
-						var UmCheckboxIcon = document.querySelectorAll('.um-icon-android-checkbox-outline-blank');
-						var UmCheckboxLabel = document.querySelectorAll('.um-field-checkbox');
-						
-						if( UmCheckboxIcon.length && UmCheckboxLabel.length ) {
-							
-							// loop through UM checkboxes
-							for (i = 0; i < UmCheckboxLabel.length; i++) {
-								
-								// find the UM input element
-								var UMCheckboxElement = UmCheckboxLabel[i].children;
-								var UMCheckboxElementName = UMCheckboxElement[0].getAttribute('name');
-								
-								// check if UM input element is remember me box
-								if( UMCheckboxElementName === 'remember' || UMCheckboxElementName === 'rememberme' ) {
-									
-									// activate the UM checkbox if it is a remember me box
-									UmCheckboxLabel[i].classList.add('active');
-									
-									// swap out UM classes to show the active state
-									UmCheckboxIcon[i].classList.add('um-icon-android-checkbox-outline');
-									UmCheckboxIcon[i].classList.remove('um-icon-android-checkbox-outline-blank');
-									
-								} // endif
-							
-							} // end for
-
-						} // endif UM
-						
-						
-						
-					// test for AR Member
-						
-						var ArmRememberMeCheckboxContainer = document.querySelectorAll('.arm_form_input_container_rememberme');
-						
-						if( ArmRememberMeCheckboxContainer.length ) {
-							
-							for (i = 0; i < ArmRememberMeCheckboxContainer.length; i++) {
-								
-								var ArmRememberMeCheckbox = ArmRememberMeCheckboxContainer[i].querySelectorAll('md-checkbox');
-								
-								if( ArmRememberMeCheckbox.length ) {
-									// loop through AR Member checkboxes
-									for (x = 0; x < ArmRememberMeCheckbox.length; x++) {
-										if( ArmRememberMeCheckbox[x].classList.contains('ng-empty') ) {
-											ArmRememberMeCheckbox[x].click();
-										}
-									}
-								}
-								
-							}
-							
-						} // end if AR Member
-							
-							
+		// Start output buffering for cleaner JavaScript
+		ob_start();
+		?>
+		<script id="wppl-precheck-remember-me">
+		(function() {
+			'use strict';
 			
-				} // endif forms
-
-			}
-
-			document.addEventListener('DOMContentLoaded', function(event) {
+			var wppl_precheck_remember_me = function() {
+				var rememberMeNames = <?php echo json_encode($remember_me_input_names); ?>;
+				var processedElements = new Set(); // Track processed elements to avoid duplicates
+				
+				/**
+				 * Check/enable a checkbox element
+				 */
+				function checkElement(element) {
+					if (processedElements.has(element)) return;
+					processedElements.add(element);
+					
+					if (element.type === 'checkbox' && !element.checked) {
+						element.checked = true;
+					}
+				}
+				
+				/**
+				 * Process standard remember me inputs
+				 */
+				function processRememberMeElements() {
+					rememberMeNames.forEach(function(inputName) {
+						// Find inputs by exact name match
+						var inputs = document.querySelectorAll('input[name="' + inputName + '"]');
+						inputs.forEach(function(input) {
+							checkElement(input);
+						});
+						
+						// Also find inputs where name contains the input name (partial match)
+						var partialInputs = document.querySelectorAll('input[type="checkbox"]');
+						partialInputs.forEach(function(input) {
+							if (input.name && input.name.includes(inputName)) {
+								checkElement(input);
+							}
+						});
+					});
+				}
+				
+				/**
+				 * Handle WooCommerce specific elements
+				 */
+				function processWooCommerce() {
+					var wooInputs = document.querySelectorAll('.woocommerce-form-login__rememberme input[type="checkbox"]');
+					wooInputs.forEach(function(input) {
+						checkElement(input);
+					});
+				}
+				
+				/**
+				 * Handle Ultimate Member Plugin
+				 */
+				function processUltimateMember() {
+					var umCheckboxLabels = document.querySelectorAll('.um-field-checkbox');
+					
+					umCheckboxLabels.forEach(function(label) {
+						var input = label.querySelector('input');
+						if (input && rememberMeNames.includes(input.name)) {
+							// Set as active and checked
+							checkElement(input);
+							label.classList.add('active');
+							
+							// Update icon classes
+							var icon = label.querySelector('.um-icon-android-checkbox-outline-blank');
+							if (icon) {
+								icon.classList.add('um-icon-android-checkbox-outline');
+								icon.classList.remove('um-icon-android-checkbox-outline-blank');
+							}
+						}
+					});
+				}
+				
+				/**
+				 * Handle ARMember Forms
+				 */
+				function processARMember() {
+					var armContainers = document.querySelectorAll('.arm_form_input_container_rememberme');
+					
+					armContainers.forEach(function(container) {
+						var checkboxes = container.querySelectorAll('md-checkbox');
+						
+						checkboxes.forEach(function(checkbox) {
+							if (checkbox.classList.contains('ng-empty')) {
+								checkbox.click(); // Activate the checkbox
+							}
+						});
+					});
+				}
+				
+				// Execute all processing functions
+				processRememberMeElements();
+				processWooCommerce();
+				processUltimateMember();
+				processARMember();
+			};
+			
+			// Run when DOM is ready
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', wppl_precheck_remember_me);
+			} else {
 				wppl_precheck_remember_me();
-			});
-
-			";
-		$script .= '</script>';
-
-		echo $script;
-
+			}
+			
+			// Also run after a short delay to catch dynamically loaded forms
+			setTimeout(wppl_precheck_remember_me, 500);
+			
+		})();
+		</script>
+		<?php
+		echo ob_get_clean();
 	}
 
 	
