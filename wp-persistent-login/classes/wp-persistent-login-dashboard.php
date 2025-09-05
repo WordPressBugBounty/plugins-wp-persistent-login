@@ -28,7 +28,7 @@ class WP_Persistent_Login_Dashboard {
         <div class="wppl-container">
             <div class="header">
                 <div>
-                    <h1><?php _e( 'WP Persistent Login', 'wp-persistent-login' ); ?></h1>
+                    <h1><?php _e( 'Persistent Login', 'wp-persistent-login' ); ?></h1>
                     <p class="text-black">
                         <?php _e('Keeping users logged into WordPress since 2014', 'wp-persistent-login'); ?>
                     </p>
@@ -201,7 +201,7 @@ class WP_Persistent_Login_Dashboard {
                         <p><?php _e('If you love Persistent Login, but want more control, have a look at the features in our premium version.', 'wp-persistent-login'); ?></p>
                         
                         <div class="action-buttons">
-                            <a href="<?php echo esc_url(WPPL_UPGRADE_PAGE); ?>" class="button try-free-button">
+                            <a href="<?php echo esc_url(WPPL_TRIAL_UPGRADE_PAGE); ?>" class="button try-free-button">
                                 <span class="dashicons dashicons-backup"></span>
                                 <?php _e('7 Day Free Trial', 'wp-persistent-login'); ?>
                             </a>

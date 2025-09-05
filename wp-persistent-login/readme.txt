@@ -1,10 +1,10 @@
-=== WordPress Persistent Login ===
+=== Persistent Login ===
 Contributors: lukeseager, freemius
 Donate link: 
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
 Tested up to: 6.8.2
-Stable tag: 3.0.0
+Stable tag: 3.0.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -118,19 +118,19 @@ This is most common if you're trying to login to two machines with the same oper
 
 = Can I limit the number of logins each user is allowed? Like Netflix? =
 
-Yes, you can now control **active logins** with WordPress Persistent Login. Just visit the Active Logins tab on the settings page and enable active logins. 
+Yes, you can now control **active logins** with Persistent Login. Just visit the Active Logins tab on the settings page and enable active logins. 
 
 The premium version allows you to customise the number of active logins, which user roles they apply to and whether users can select which logins they end when they reach the limit. 
 
 = Is it compatible with WordPress Multisite =
 
-No. WordPress Persistent login isn't compatible with multisite installations at the moment.
+No. Persistent login isn't compatible with multisite installations at the moment.
 
 = Is it secure? =
 
 You bet! 
 
-WP Persistent Login uses core WordPress methods to ensure that we're logging in the right user. 
+Persistent Login uses core WordPress methods to ensure that we're logging in the right user. 
 
 = Support =
 
@@ -164,6 +164,10 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.0.1 =
+* Removed all reference of 'WP' and 'WordPress' from the plugin due to legal dispute. 
+* Fixed 7 day free trial link on dashboard and settings page.
 
 = 3.0.0 =
 * Brand new plugin UI 
@@ -235,4 +239,4 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 * Freemium model adopted
 
 = 1.0.0 =
-* WordPress Persistent Login Plugin launch
+* Persistent Login Plugin launch

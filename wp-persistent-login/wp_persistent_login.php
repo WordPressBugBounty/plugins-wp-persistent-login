@@ -2,14 +2,14 @@
 
 /**
  *
- *   Plugin Name: WordPress Persistent Login
+ *   Plugin Name: Persistent Login
  *   Plugin URI: https://persistentlogin.com/
  *   Description: Keep users logged into your website securely, and allows you to limit the number of active logins.
  *   Author: Luke Seager
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 3.0.0
+ *   Version: 3.0.1
  *
  *
  */
@@ -45,6 +45,7 @@ if ( function_exists( 'persistent_login' ) ) {
     define( 'WPPL_SETTINGS_PAGE', WPPL_SETTINGS_AREA . '?page=wp-persistent-login' );
     define( 'WPPL_ACCOUNT_PAGE', get_admin_url() . 'admin.php?page=wp-persistent-login-account' );
     define( 'WPPL_UPGRADE_PAGE', WPPL_SETTINGS_AREA . '?billing_cycle=annual&page=wp-persistent-login-pricing' );
+    define( 'WPPL_TRIAL_UPGRADE_PAGE', WPPL_SETTINGS_AREA . '?billing_cycle=annual&trial=true&page=wp-persistent-login-pricing' );
     define( 'WPPL_REVIEW_PAGE', 'https://wordpress.org/support/plugin/wp-persistent-login/reviews/#new-post' );
     define( 'WPPL_TEXT_DOMAIN', 'wp-persistent-login' );
     // load composor packages.
@@ -65,7 +66,7 @@ if ( function_exists( 'persistent_login' ) ) {
     // Load uninstall cleanup file.
     require_once WPPL_PLUGIN_PATH . '/includes/uninstall.php';
     persistent_login()->add_action( 'after_uninstall', 'persistent_login_uninstall_cleanup' );
-    // autoload wp persistent login classes.
+    // autoload persistent login classes.
     require_once WPPL_PLUGIN_PATH . '/classes/autoload.php';
     // secondary definitions used throughout application.
     $wppl_pr_enabled = false;
@@ -79,7 +80,7 @@ if ( function_exists( 'persistent_login' ) ) {
     new WP_Persistent_Login_Email();
     new WP_Persistent_Login_User_Count();
     /**
-     * Action hook to execute after WP Persistent Login plugin init.
+     * Action hook to execute after Persistent Login plugin init.
      *
      * Use this hook to init addons.
      *
@@ -96,7 +97,7 @@ if ( function_exists( 'persistent_login' ) ) {
         function wppl_on_mail_error_log(  $wp_error  ) {
             // turn wp_error into a string.
             $wp_error = $wp_error->get_error_message();
-            error_log( 'WP Persistent Login: ' . $wp_error );
+            error_log( 'Persistent Login: ' . $wp_error );
         }
 
     }

@@ -811,7 +811,7 @@ Thanks,
 			
 			// updated db version
 			if( $_GET['view'] == 'update' ) {
-				$message = __('WordPress Persistent Login has been updated to the latest database version!', 'wp-persistent-login' );
+				$message = __('Persistent Login has been updated to the latest database version!', 'wp-persistent-login' );
 				$class = 'notice updated';
 				printf( '<div class="%1$s"><p>%2$s</p></div>', esc_attr( $class ), esc_html( $message ) ); 
 			}
@@ -824,7 +824,7 @@ Thanks,
 	
 		<div class="wrap">
 			
-			<h1><?php _e('WordPress Persistent Login', 'wp-persistent-login' ); ?></h1>
+			<h1><?php _e('Persistent Login', 'wp-persistent-login' ); ?></h1>
 			<h2 style="float: left; margin-top: 0;"><?php _e('Free Forever Plan', 'wp-persistent-login' ); ?></h2>
 			
 			<div style="float: right;">
@@ -1177,7 +1177,7 @@ Thanks,
 					<div class="postbox">
 						<div class="inside">
 							<h3 style="margin-top: 1rem; cursor: auto;">Want a new feature?</h3>
-							<p>If you'd like to see a new feature on WordPress Persistent Login, just request it by clicking the button below and <strong>choose the Feature Request option</strong>.</p>
+							<p>If you'd like to see a new feature on Persistent Login, just request it by clicking the button below and <strong>choose the Feature Request option</strong>.</p>
 							<a href="<?php echo admin_url(); ?>options-general.php?page=wp-persistent-login-contact" class="button">
 								Request a Feature
 							</a>

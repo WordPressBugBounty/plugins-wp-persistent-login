@@ -210,7 +210,7 @@ class WP_Persistent_Login_Profile {
         ?>
 
             <h2 id="sessions" style="margin: 2rem 0 0;">
-                <?php _e('Active Logins - WP Persistent Login', 'wp-persistent-login' ); ?>
+                <?php _e('Active Logins - Persistent Login', 'wp-persistent-login' ); ?>
             </h2>
 
             <p class="description">

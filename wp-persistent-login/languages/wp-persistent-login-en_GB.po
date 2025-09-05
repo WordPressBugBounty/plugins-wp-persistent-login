@@ -1,8 +1,8 @@
 # Copyright (C) 2023 Luke Seager
-# This file is distributed under the same license as the WordPress Persistent Login package.
+# This file is distributed under the same license as the Persistent Login package.
 msgid ""
 msgstr ""
-"Project-Id-Version: WordPress Persistent Login 2.0.12\n"
+"Project-Id-Version: Persistent Login 2.0.12\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/wp-persistent-"
 "login\n"
 "POT-Creation-Date: 2023-04-02 18:22:54+00:00\n"
@@ -126,13 +126,13 @@ msgstr ""
 #: classes/premium/wp-persistent-login-settings-premium.php:479
 #: classes/wp-persistent-login-settings.php:486
 msgid ""
-"WordPress Persistent Login has been updated to the latest database version!"
+"Persistent Login has been updated to the latest database version!"
 msgstr ""
-"WordPress Persistent Login has been updated to the latest database version!"
+"Persistent Login has been updated to the latest database version!"
 
 #. Plugin Name of the plugin/theme
-msgid "WordPress Persistent Login"
-msgstr "WordPress Persistent Login"
+msgid "Persistent Login"
+msgstr "Persistent Login"
 
 #: classes/premium/wp-persistent-login-settings-premium.php:492
 msgid "Premium Plan"
@@ -361,11 +361,11 @@ msgstr "Want a new feature?"
 
 #: classes/premium/wp-persistent-login-settings-premium.php:1043
 msgid ""
-"If you'd like to see a new feature on WordPress Persistent Login, just "
+"If you'd like to see a new feature on Persistent Login, just "
 "request it by clicking the button below and <strong>choose the Feature "
 "Request option</strong>."
 msgstr ""
-"If you'd like to see a new feature on WordPress Persistent Login, just "
+"If you'd like to see a new feature on Persistent Login, just "
 "request it by clicking the button below and <strong>choose the Feature "
 "Request option</strong>."
 
@@ -412,8 +412,8 @@ msgid "Settings"
 msgstr "Settings"
 
 #: classes/wp-persistent-login-profile.php:209
-msgid "Active Logins - WP Persistent Login"
-msgstr "Active Logins - WP Persistent Login"
+msgid "Active Logins - Persistent Login"
+msgstr "Active Logins - Persistent Login"
 
 #: classes/wp-persistent-login-profile.php:213
 msgid "Select the active logins you want to end, and click update profile"

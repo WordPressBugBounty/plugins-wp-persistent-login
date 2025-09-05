@@ -707,7 +707,7 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
         
         echo (
             sprintf(
-                '<hr/><h3><strong>WordPress Persistent Login %s</strong></h3>
+                '<hr/><h3><strong>Persistent Login %s</strong></h3>
                 <p>%s</p>
                 <p>
                     <a href="'.WPPL_SETTINGS_PAGE.'" class="button">Manage Settings</a>
@@ -782,14 +782,14 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
                     
                     // Log if scheduling failed
                     if( $update_scheduled === false ) {
-                        error_log( 'WP Persistent Login: Failed to schedule persistent_login_update_count cron job' );
+                        error_log( 'Persistent Login: Failed to schedule persistent_login_update_count cron job' );
                     }
                 }
 
             } else {
                 // No allowed roles found, stop the count
                 $this->stop_count();
-                error_log( 'WP Persistent Login: No allowed roles found for user count' );
+                error_log( 'Persistent Login: No allowed roles found for user count' );
             }
 
         }
