@@ -28,9 +28,9 @@ class WP_Persistent_Login {
 
 		$this->expiration = YEAR_IN_SECONDS;
 
-		// check if persistent login feature is enabled
-		$featureOptions = get_option( 'persistent_login_feature_options', array() );
-		if( !isset($featureOptions['enable_persistent_login']) || $featureOptions['enable_persistent_login'] !== '1' ) {
+		// Check if persistent login feature is enabled
+		$featureOptions = get_option('persistent_login_feature_flags', array());
+		if( !isset($featureOptions['enablePersistentLogin']) || $featureOptions['enablePersistentLogin'] !== '1' ) {
 			return; // stop processing if persistent login is not enabled
 		}
 		

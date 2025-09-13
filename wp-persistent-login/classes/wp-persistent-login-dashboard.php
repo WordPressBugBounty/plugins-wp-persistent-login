@@ -46,7 +46,7 @@ class WP_Persistent_Login_Dashboard {
                 </div>
             </div>
 
-            
+
             <div class="wppl-wrap">
 
                  <?php if( isset($_GET['wppl-msg']) ) : ?>
@@ -230,13 +230,13 @@ class WP_Persistent_Login_Dashboard {
                 
                 <div class="features-grid">
                     <?php
-                    // Get plugin options
-                    $options = get_option('persistent_login_feature_options', array());
+                    // Get plugin options - should be initialized by database upgrade
+                    $options = get_option('persistent_login_feature_flags', array());
                     
-                    // Set default values if options don't exist
-                    $persistent_login_enabled = isset($options['enable_persistent_login']) ? $options['enable_persistent_login'] : 1;
-                    $active_logins_enabled = isset($options['enable_active_logins']) ? $options['enable_active_logins'] : 0;
-                    $login_history_enabled = isset($options['enableLoginHistory']) ? $options['enableLoginHistory'] : 0;
+                    // These should be set by the database upgrade, but provide safe defaults
+                    $persistent_login_enabled = isset($options['enablePersistentLogin']) ? $options['enablePersistentLogin'] : '1';
+                    $active_logins_enabled = isset($options['enableActiveLogins']) ? $options['enableActiveLogins'] : '0';
+                    $login_history_enabled = isset($options['enableLoginHistory']) ? $options['enableLoginHistory'] : '0';
                     
                     // Persistent Login Feature Box
                     ?>                    
@@ -255,7 +255,7 @@ class WP_Persistent_Login_Dashboard {
                                         id="persistent-login-toggle"
                                         class="feature-toggle" 
                                         data-feature="persistent_login" 
-                                        data-option-name="enable_persistent_login" 
+                                        data-option-name="enablePersistentLogin" 
                                         aria-labelledby="persistent-login-label"
                                         <?php checked($persistent_login_enabled, 1); ?>>
                                     <span class="slider" aria-hidden="true"></span>
@@ -286,7 +286,7 @@ class WP_Persistent_Login_Dashboard {
                                         id="active-logins-toggle"
                                         class="feature-toggle" 
                                         data-feature="active_logins" 
-                                        data-option-name="enable_active_logins" 
+                                        data-option-name="enableActiveLogins" 
                                         aria-labelledby="active-logins-label"
                                         <?php checked($active_logins_enabled, 1); ?>>
                                     <span class="slider" aria-hidden="true"></span>
@@ -355,7 +355,7 @@ class WP_Persistent_Login_Dashboard {
         $duplicate_sessions = isset($options['duplicateSessions']) ? $options['duplicateSessions'] : '0';
         $dashboard_stats = $settings->get_dashboard_stats();
 
-        $persistent_login_features = get_option('persistent_login_feature_options', array());
+        $persistent_login_features = get_option('persistent_login_feature_flags', array());
         
         $this->render_page_header( __( 'Persistent Login Settings', 'wp-persistent-login' ) );
         ?>
@@ -364,7 +364,7 @@ class WP_Persistent_Login_Dashboard {
                 <p><?php _e('Configure how the persistent login functionality works across your site.', 'wp-persistent-login'); ?></p>
 
                 <!-- Warning to use if Persistent Login is not enabled -->
-                <?php if( !isset($persistent_login_features['enable_persistent_login']) || $persistent_login_features['enable_persistent_login'] !== '1' ) : ?>
+                <?php if( !isset($persistent_login_features['enablePersistentLogin']) || $persistent_login_features['enablePersistentLogin'] !== '1' ) : ?>
                     <div class="notice notice-warning is-dismissible" style="margin-bottom: 2rem;">
                         <p><?php _e('Persistent Login is currently disabled. Please enable it on the Dashboard for the settings below to take effect.', 'wp-persistent-login'); ?></p>
                     </div>
@@ -536,12 +536,12 @@ class WP_Persistent_Login_Dashboard {
         $settings = new WP_Persistent_Login_Settings();
         $limit_active_logins = $settings->get_limit_active_logins();
         $limit_reached_logic = $settings->get_limit_reached_logic();
-        $active_logins_features = get_option('persistent_login_feature_options', array());
+        $active_logins_features = get_option('persistent_login_feature_flags', array());
         
         $this->render_page_header( __( 'Active Login Settings', 'wp-persistent-login' ) );
         ?>
 
-                <?php if( !isset($active_logins_features['enable_active_logins']) || $active_logins_features['enable_active_logins'] !== '1' ) : ?>
+                <?php if( !isset($active_logins_features['enableActiveLogins']) || $active_logins_features['enableActiveLogins'] !== '1' ) : ?>
                     <div class="notice notice-warning is-dismissible" style="margin-bottom: 2rem;">
                         <p><?php _e('Active Logins is currently disabled. Please enable it on the Dashboard for the settings below to take effect.', 'wp-persistent-login'); ?></p>
                     </div>
@@ -690,7 +690,7 @@ class WP_Persistent_Login_Dashboard {
         $notification_email_subject = $settings->get_notification_email_subject();
         $notification_email_template = $settings->get_notification_email_template(false);
 
-        $login_history_features = get_option('persistent_login_feature_options', array());
+        $login_history_features = get_option('persistent_login_feature_flags', array());
         
         $this->render_page_header( __( 'Login History Settings', 'wp-persistent-login' ) );
         ?>

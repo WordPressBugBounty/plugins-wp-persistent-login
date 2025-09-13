@@ -23,7 +23,7 @@ class WP_Persistent_Login_Login_History {
 	public function __construct() {
 
         // check if the login history feature is enabled
-        $featureOptions = get_option( 'persistent_login_feature_options', array() );
+        $featureOptions = get_option( 'persistent_login_feature_flags', array() );
         if( !isset($featureOptions['enableLoginHistory']) || $featureOptions['enableLoginHistory'] !== '1' ) {
             return; // stop processing if login history is not enabled
         }

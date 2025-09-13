@@ -26,13 +26,13 @@ function persistent_login_activate() {
         );
         update_option( 'persistent_login_options', $defaultOptions );
     }
-    // feature options
-    if ( !get_option( 'persistent_login_feature_options' ) ) {
+    // feature options (debug logging removed)
+    if ( !get_option( 'persistent_login_feature_flags' ) ) {
         $defaultFeatureOptions = array(
-            'enable_persistent_login' => '1',
-            'enable_active_logins'    => '0',
-            'enableLoginHistory'      => '0',
+            'enablePersistentLogin' => '1',
+            'enableActiveLogins'    => '0',
+            'enableLoginHistory'    => '0',
         );
-        update_option( 'persistent_login_feature_options', $defaultFeatureOptions );
+        update_option( 'persistent_login_feature_flags', $defaultFeatureOptions );
     }
 }

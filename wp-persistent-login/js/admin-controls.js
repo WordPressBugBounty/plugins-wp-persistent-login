@@ -74,6 +74,144 @@ function sendInactivityTestEmail() {
 
 }
 
+// ================= WPPL Toast Utility (no dependencies) =================
+(function (window, document) {
+    if (window.WPPLToast) { return; } // Prevent double registration
+
+    const TOAST_DEFAULT_DURATION = 4000;
+    const MAX_VISIBLE = 4;
+
+    let container = null;
+    let queue = [];
+    let active = [];
+
+    function ensureContainer() {
+        if (container) return;
+        container = document.createElement('div');
+        container.id = 'wppl-toast-container';
+        container.setAttribute('aria-live', 'polite');
+        container.setAttribute('aria-atomic', 'false');
+        document.body.appendChild(container);
+    }
+
+    function createToastElement(message, type, id) {
+        const toast = document.createElement('div');
+        toast.className = 'wppl-toast wppl-toast-' + type;
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('data-toast-id', id);
+
+        // Message span
+        const textSpan = document.createElement('span');
+        textSpan.className = 'wppl-toast-message';
+        textSpan.textContent = message;
+        toast.appendChild(textSpan);
+
+        // Close button
+        const closeBtn = document.createElement('button');
+        closeBtn.type = 'button';
+        closeBtn.className = 'wppl-toast-close';
+        closeBtn.setAttribute('aria-label', 'Dismiss notification');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.addEventListener('click', () => dismissToast(id, true));
+        toast.appendChild(closeBtn);
+
+        return toast;
+    }
+
+    function speak(message) {
+        // Optional: leverage WP a11y if present
+        if (window.wp && wp.a11y && typeof wp.a11y.speak === 'function') {
+            wp.a11y.speak(message);
+        }
+    }
+
+    function showNext() {
+        if (!queue.length) return;
+        if (active.length >= MAX_VISIBLE) return;
+
+        const next = queue.shift();
+        active.push(next);
+
+        const el = createToastElement(next.message, next.type, next.id);
+        next.element = el;
+        container.appendChild(el);
+
+        // Allow CSS transition
+        requestAnimationFrame(() => {
+            el.classList.add('visible');
+        });
+
+        speak(next.message);
+
+        if (next.duration > 0) {
+            next.timer = setTimeout(() => dismissToast(next.id), next.duration);
+        }
+    }
+
+    function dismissToast(id, userInitiated = false) {
+        const idx = active.findIndex(t => t.id === id);
+        if (idx === -1) return;
+        const toastObj = active[idx];
+        active.splice(idx, 1);
+
+        if (toastObj.timer) {
+            clearTimeout(toastObj.timer);
+        }
+
+        if (toastObj.element) {
+            toastObj.element.classList.remove('visible');
+            // Remove after transition
+            setTimeout(() => {
+                if (toastObj.element && toastObj.element.parentNode) {
+                    toastObj.element.parentNode.removeChild(toastObj.element);
+                }
+            }, 300);
+        }
+
+        // If user manually closed, optionally announce dismissal
+        if (userInitiated) {
+            speak('Notification dismissed');
+        }
+
+        // Show more if queued
+        showNext();
+    }
+
+    function add(message, opts = {}) {
+        ensureContainer();
+        const id = 'wppl-toast-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+        const toast = {
+            id,
+            message: String(message),
+            type: (opts.type || 'info').toLowerCase(), // info | success | warning | error
+            duration: typeof opts.duration === 'number' ? opts.duration : TOAST_DEFAULT_DURATION,
+            element: null,
+            timer: null
+        };
+        queue.push(toast);
+        showNext();
+        return id;
+    }
+
+    function clearAll() {
+        // Dismiss active
+        active.slice().forEach(t => dismissToast(t.id));
+        // Empty queue
+        queue = [];
+    }
+
+    window.WPPLToast = {
+        show: add,
+        success: (m, o={}) => add(m, Object.assign({ type: 'success' }, o)),
+        info:    (m, o={}) => add(m, Object.assign({ type: 'info' }, o)),
+        warning: (m, o={}) => add(m, Object.assign({ type: 'warning' }, o)),
+        error:   (m, o={}) => add(m, Object.assign({ type: 'error' }, o)),
+        dismiss: dismissToast,
+        clear: clearAll
+    };
+})(window, document);
+// ================= End WPPL Toast Utility =================
+
 /**
  * Track changes in forms to warn users about unsaved changes
  */
@@ -138,7 +276,7 @@ function handleFeatureToggle() {
         feature: feature,
         option_name: optionName,
         enabled: isEnabled,
-        nonce: wppl_nonce // This will need to be localized in PHP
+        nonce: wppl_nonce // This nonce is localized from PHP
     };
     
     jQuery.ajax({
@@ -148,9 +286,17 @@ function handleFeatureToggle() {
         data: data,
         success: function(response) {
             if (response.success) {
-                // Display success notification if needed
+                // Log success notification
                 console.log('Feature ' + feature + ' ' + (isEnabled ? 'enabled' : 'disabled'));
-                
+
+                // Display success notification toast within the ui
+                var msg = 'Feature ' + feature + ' ' + (isEnabled ? 'enabled' : 'disabled');
+                if (isEnabled) {
+                    window.WPPLToast.success(msg);
+                } else {
+                    window.WPPLToast.info(msg);
+                }
+
                 // Reset the form changes flag since the change was saved via AJAX
                 resetFormChangesFlag();
             } else {

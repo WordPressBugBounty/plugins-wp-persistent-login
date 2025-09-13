@@ -70,8 +70,8 @@ class WP_Persistent_Login_Settings {
 		if( $hook !== 'users_page_wp-persistent-login' ) {
 			return;
 		}
-		wp_enqueue_script( 'wppl_admin_controls', WPPL_PLUGIN_URL . '/js/admin-controls.js', array('jquery'), '1.0' );
-		wp_enqueue_style( 'wppl_dashboard_styles', WPPL_PLUGIN_URL . '/css/dashboard.css', array(), '1.0' );
+		wp_enqueue_script( 'wppl_admin_controls', WPPL_PLUGIN_URL . '/js/admin-controls.js', array('jquery'), '1.1' );
+		wp_enqueue_style( 'wppl_dashboard_styles', WPPL_PLUGIN_URL . '/css/dashboard.css', array(), '1.1' );
         
         // Add nonce for AJAX requests
         wp_localize_script( 'wppl_admin_controls', 'wppl_nonce', wp_create_nonce( 'wppl_feature_toggle_nonce' ) );
@@ -97,13 +97,15 @@ class WP_Persistent_Login_Settings {
 		}
         
 		// Get current options
-		$options = get_option( 'persistent_login_feature_options', array() );
+		$options = get_option( 'persistent_login_feature_flags', array() );
+        
+		// Debug logging removed (previously wrote to wppl-debug.log)
         
 		// Update option, always as string
 		$options[$option_name] = $enabled;
         
 		// Save updated options
-		$updated = update_option( 'persistent_login_feature_options', $options );
+		$updated = update_option( 'persistent_login_feature_flags', $options );
         
         if ( $updated ) {
             wp_send_json_success( array( 

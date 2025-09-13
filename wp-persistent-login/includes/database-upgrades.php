@@ -1,18 +1,22 @@
 <?php
 
 /**
+ * Database upgrade routines for Persistent Login.
+ */
+/**
  * persistent_login_update_db_check
  *
  * @return void
  */
 function persistent_login_update_db_check() {
-    // check db version
-    $persistent_login_db_version = WPPL_DATABASE_VERSION;
-    $current_persistent_login_db_version = get_option( 'persistent_login_db_version' );
+    // get the installed database version (not the plugin version)
+    $persistent_login_db_version = get_option( 'persistent_login_db_version', '2.0.10' );
+    $plugin_version = WPPL_DATABASE_VERSION;
+    // This is the target version from the plugin
     // test db version number against plugin
-    if ( $current_persistent_login_db_version !== $persistent_login_db_version ) {
+    if ( $persistent_login_db_version !== $plugin_version ) {
         // if different, run the update function
-        $persistent_login_db_update = persistent_login_update_db( $current_persistent_login_db_version );
+        $persistent_login_db_update = persistent_login_update_db( $persistent_login_db_version );
     }
 }
 
@@ -85,7 +89,6 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
             // update db version option
             update_option( 'persistent_login_db_version', '1.3.10' );
             $persistent_login_db_version = '1.3.10';
-            return true;
         }
     }
     // 1.3.10 update
@@ -100,7 +103,6 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
         // update db version option
         update_option( 'persistent_login_db_version', '1.3.12' );
         $persistent_login_db_version = '1.3.12';
-        return true;
     }
     // 1.3.12 update
     if ( $persistent_login_db_version === '1.3.12' ) {
@@ -115,14 +117,12 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
         // update db version option
         update_option( 'persistent_login_db_version', '2.0.0' );
         $persistent_login_db_version = '2.0.0';
-        return true;
     }
     // 2.0.0 update
     if ( $persistent_login_db_version === '2.0.0' ) {
         // update db version option
         update_option( 'persistent_login_db_version', '2.0.9' );
         $persistent_login_db_version = '2.0.9';
-        return true;
     }
     // 2.0.9 update
     if ( $persistent_login_db_version === '2.0.9' ) {
@@ -141,7 +141,78 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
         // update db version option
         update_option( 'persistent_login_db_version', '2.0.10' );
         $persistent_login_db_version = '2.0.10';
-        return true;
     }
     // 2.0.10 update
+    // Feature option naming consistency update for version 3.0.1
+    // Steps: Fetch existing -> derive autoload -> delete -> rebuild camelCase array -> add option -> log result
+    if ( $persistent_login_db_version === '2.0.10' ) {
+        $old_option_name = 'persistent_login_feature_options';
+        $new_option_name = 'persistent_login_feature_flags';
+        // 1. Fetch existing raw value and autoload.
+        $existing_options = get_option( $old_option_name, array() );
+        // 2. Delete existing option completely (removes any duplicates or stale values).
+        delete_option( $old_option_name );
+        if ( function_exists( 'wp_cache_delete' ) ) {
+            wp_cache_delete( $old_option_name, 'options' );
+        }
+        // check if the option is still accessible
+        $check = get_option( $old_option_name, 'NOT_SET' );
+        if ( $check !== 'NOT_SET' ) {
+            // if it's still there, try deleting again through wpdb
+            global $wpdb;
+            $wpdb->delete( $wpdb->options, array(
+                'option_name' => $old_option_name,
+            ) );
+            if ( function_exists( 'wp_cache_delete' ) ) {
+                wp_cache_delete( $old_option_name, 'options' );
+            }
+        }
+        // 3. Rebuild canonical camelCase structure from whatever keys we had.
+        // Rebuild canonical feature flag array with consistent camelCase keys.
+        // Priority for each flag:
+        // 1. Existing camelCase key.
+        // 2. Legacy snake_case key (if applicable).
+        // 3. Sensible default.
+        $rebuilt_options = array();
+        $feature_map = array(
+            'enablePersistentLogin' => array(
+                'legacy'  => 'enable_persistent_login',
+                'default' => '1',
+            ),
+            'enableActiveLogins'    => array(
+                'legacy'  => 'enable_active_logins',
+                'default' => '0',
+            ),
+            'enableLoginHistory'    => array(
+                'legacy'  => null,
+                'default' => '0',
+            ),
+        );
+        foreach ( $feature_map as $camel_key => $meta ) {
+            if ( isset( $existing_options[$camel_key] ) ) {
+                // Already stored in new canonical form.
+                $rebuilt_options[$camel_key] = $existing_options[$camel_key];
+            } elseif ( !empty( $meta['legacy'] ) && isset( $existing_options[$meta['legacy']] ) ) {
+                // Use legacy snake_case value if present.
+                $rebuilt_options[$camel_key] = $existing_options[$meta['legacy']];
+            } else {
+                // Fallback to default.
+                $rebuilt_options[$camel_key] = $meta['default'];
+            }
+        }
+        // 4. Add the option fresh.
+        $added = add_option( $new_option_name, $rebuilt_options );
+        // 5. If add failed (edge case: race condition created it), fallback to update_option to enforce value.
+        if ( !$added ) {
+            $updated = update_option( $new_option_name, $rebuilt_options );
+        }
+        // 6. Final read-back for verification.
+        $final = get_option( $new_option_name, array() );
+        // 7. Update DB version.
+        update_option( 'persistent_login_db_version', '3.0.1' );
+        $persistent_login_db_version = '3.0.1';
+    }
+    // 3.0.1 update
+    // Return true to indicate that the update was performed
+    return true;
 }
