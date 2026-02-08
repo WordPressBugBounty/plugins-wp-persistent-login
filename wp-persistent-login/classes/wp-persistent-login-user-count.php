@@ -27,8 +27,8 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	 */
 	public function __construct() {
 
-        // add a minutely WP Cront schedule for when the count is running
-        add_filter( 'cron_schedules', array($this, 'cron_add_minutely') ); 
+        // add a minutely WP Cron schedule for when the count is running
+        add_filter( 'cron_schedules', array($this, 'cron_add_minutely') );
 
         // start the user count
         add_action( 'persistent_login_user_count', array($this, 'start_count') );
@@ -47,9 +47,33 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
     	
 	/**
+	 * get_count_update_schedule
+     * 
+     * Gets the appropriate cron schedule name based on WP_CRON_LOCK_TIMEOUT constant.
+	 *
+     * @since 3.0.2
+	 * @return string The schedule name to use
+	 */
+	private function get_count_update_schedule() {
+
+        // Check if the WP_CRON_LOCK_TIMEOUT constant is defined, and use it to set a safe lock timeout
+        if( defined('WP_CRON_LOCK_TIMEOUT') && WP_CRON_LOCK_TIMEOUT > 60 ) {
+
+            $new_interval = WP_CRON_LOCK_TIMEOUT + 20; // add 20 seconds buffer
+            return 'every_' . $new_interval . '_seconds';
+
+        }
+
+        // Default to minutely schedule
+        return 'minutely';
+	
+    }
+
+
+	/**
 	 * cron_add_minutely
      * 
-     * Adds a Cron schedule that runs every minute.
+     * Adds a Cron schedule that runs every minute, or a custom interval if WP_CRON_LOCK_TIMEOUT is high.
 	 *
      * @since 2.0.0
 	 * @param  mixed $schedules
@@ -57,7 +81,19 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 	 */
 	public function cron_add_minutely( $schedules ) {
 
-		// Adds once weekly to the existing schedules.
+        // Check if the WP_CRON_LOCK_TIMEOUT constant is defined and requires a custom schedule
+        if( defined('WP_CRON_LOCK_TIMEOUT') && WP_CRON_LOCK_TIMEOUT > 60 ) {
+
+            $new_interval = WP_CRON_LOCK_TIMEOUT + 20; // add 20 seconds buffer
+
+            $schedules['every_' . $new_interval . '_seconds'] = array(
+                'interval' => $new_interval,
+                'display'  => __( 'Persistent Login: Every ' . $new_interval . 's to avoid '. WP_CRON_LOCK_TIMEOUT .'s WP_CRON_LOCK_TIMEOUT', 'wp-persistent-login' ),
+            );
+
+        }
+
+		// Adds every minute to the existing schedules (default schedule)
         if( !isset($schedules['minutely']) ) {
             $schedules['minutely'] = array(
                 'interval' => 60,
@@ -736,64 +772,66 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
 
         // Check if the count is currently running, if it's not, start it. 
         $is_count_running = $this->is_user_count_running();
-        
-        if( !$is_count_running ) {
 
-            // set a transient so we know the count has started
-            set_transient( 'persistent_login_user_count_running', 1, 0 );
-
-            // get the current user count and store it as the last count
-            $last_count = $this->get_user_count();
-            set_transient( 'persistent_login_last_count', $last_count, 0 );
-        
-
-            // get the allowed user roles to count
-            $roles = [];
-            $allowed_roles = $this->get_allowed_roles();
-
-            if( is_array($allowed_roles) && !empty($allowed_roles) ) {
-
-                // store the roles we're allowed to count
-                set_transient('persistent_login_allowed_roles_reference', $allowed_roles, 0);
-
-                // set the count to 0 for each role and update the count
-                foreach( $allowed_roles as $key => $value ) {
-                    $roles[$value] = 0;
-                }
-                set_transient('persistent_login_user_count_temporary', $roles);
-            
-            
-                // set the current role to the first role in the $allowed_roles array
-                $current_role = $allowed_roles[0];
-
-                // set the current role being counted
-                set_transient( 'persistent_login_user_count_current_role', $current_role, 0 );
-
-                // set the current count offset to 0 because we're just starting the count now
-                set_transient('persistent_login_user_count_offset', 0, 0);
-            
-                // check if the count is scheduled to update
-                $timestamp = wp_next_scheduled( 'persistent_login_update_count' );
-                            
-                // If $timestamp == false, schedule the count now since it hasn't been started yet
-                if( $timestamp == false ) {
-                    // Schedule the event for right now, then to repeat minutely using the hook 'persistent_login_update_count'
-                    $update_scheduled = wp_schedule_event( time()+MINUTE_IN_SECONDS, 'minutely', 'persistent_login_update_count');
-                    
-                    // Log if scheduling failed
-                    if( $update_scheduled === false ) {
-                        error_log( 'Persistent Login: Failed to schedule persistent_login_update_count cron job' );
-                    }
-                }
-
-            } else {
-                // No allowed roles found, stop the count
-                $this->stop_count();
-                error_log( 'Persistent Login: No allowed roles found for user count' );
-            }
-
+        // if the count is running, stop it first
+        if( $is_count_running ) {
+            $this->stop_count();
         }
         
+        // set a transient so we know the count has started
+        $user_count_runnning_transient = set_transient( 'persistent_login_user_count_running', 1, 0 );
+
+        // get the current user count and store it as the last count
+        $last_count = $this->get_user_count();
+        set_transient( 'persistent_login_last_count', $last_count, 0 );
+
+        // get the allowed user roles to count
+        $roles = [];
+        $allowed_roles = $this->get_allowed_roles();
+
+        if( is_array($allowed_roles) && !empty($allowed_roles) ) {
+
+            // store the roles we're allowed to count
+            set_transient('persistent_login_allowed_roles_reference', $allowed_roles, 0);
+
+            // set the count to 0 for each role and update the count
+            foreach( $allowed_roles as $key => $value ) {
+                $roles[$value] = 0;
+            }
+            set_transient('persistent_login_user_count_temporary', $roles);
+        
+        
+            // set the current role to the first role in the $allowed_roles array
+            $current_role = $allowed_roles[0];
+
+            // set the current role being counted
+            set_transient( 'persistent_login_user_count_current_role', $current_role, 0 );
+
+            // set the current count offset to 0 because we're just starting the count now
+            set_transient('persistent_login_user_count_offset', 0, 0);
+        
+            // check if the count is scheduled to update
+            $timestamp = wp_next_scheduled( 'persistent_login_update_count' );
+                        
+            // If $timestamp == false, schedule the count now since it hasn't been started yet
+            if( $timestamp == false ) {
+
+                // Get the appropriate schedule name
+                $schedule_name = $this->get_count_update_schedule();
+                
+                // Schedule the event for right now, then to repeat using the hook 'persistent_login_update_count'
+                $update_scheduled = wp_schedule_event( time()+60, $schedule_name, 'persistent_login_update_count');
+
+                // Log if scheduling failed
+                if( $update_scheduled === false ) {
+                    error_log( 'Persistent Login: Failed to schedule persistent_login_update_count cron job' );
+                }
+            }
+
+        } else {
+            // No allowed roles found, stop the count
+            $this->stop_count();
+        }        
         
     }
 
@@ -887,16 +925,20 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
      * @since 2.0.0
      * @return void
      */
-    private function stop_count() {
+    public function stop_count($update_user_count = true) {
 
-        // move the temporary count to the main count
-        $temporary_user_count = get_transient('persistent_login_user_count_temporary');
-        $this->update_user_count_breakdown($temporary_user_count);
-        
-        // Save the total count for last count display
-        if( is_array($temporary_user_count) && !empty($temporary_user_count) ) {
-            $total_count = array_sum($temporary_user_count);
-            set_transient('persistent_login_last_count', $total_count, 0);
+        if( $update_user_count ) {
+
+            // move the temporary count to the main count
+            $temporary_user_count = get_transient('persistent_login_user_count_temporary');
+            $this->update_user_count_breakdown($temporary_user_count);
+            
+            // Save the total count for last count display
+            if( is_array($temporary_user_count) && !empty($temporary_user_count) ) {
+                $total_count = array_sum($temporary_user_count);
+                set_transient('persistent_login_last_count', $total_count, 0);
+            }
+
         }
 
         // we're done, clean up transients

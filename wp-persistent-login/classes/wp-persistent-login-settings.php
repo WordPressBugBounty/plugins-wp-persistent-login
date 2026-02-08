@@ -1261,10 +1261,7 @@ Thanks,
                 }
             }
         }
-        
-        // Log data for debugging
-        error_log('WPPL Count Status - Current role: ' . $current_role);
-        error_log('WPPL Count Status - Roles: ' . print_r(array_keys($role_counts), true));
+
         
         wp_send_json_success(array(
             'is_counting' => true,

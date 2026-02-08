@@ -2,6 +2,6 @@
     "require": {
         "whichbrowser/parser": "^2.0",
         "psr/cache": "1.0.1",
-        "freemius/wordpress-sdk": "^2.12"
+        "freemius/wordpress-sdk": "^2.13"
     }
 }

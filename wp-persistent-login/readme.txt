@@ -3,8 +3,8 @@ Contributors: lukeseager, freemius
 Donate link: 
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
-Tested up to: 6.8.2
-Stable tag: 3.0.2
+Tested up to: 6.9
+Stable tag: 3.0.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -164,6 +164,13 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.0.3 =
+* Feature: Added 'Stop Count' button to both free and premium dashboards to allow administrators to stop a running user count process.
+* Fix: Resolved issue where user count could get stuck in 'Counting...' state if a previous count was interrupted.
+* Fix: Fixed Login History settings not saving correctly when toggled from the dashboard.
+* Improvement: User count handles WP_CRON_LOCK_TIMEOUT by running count at a longer interval to avoid conflicts.
+* Updating Freemius SDK to latest version.
 
 = 3.0.2 =
 * Fix: Resolved feature toggle inconsistency where some users upgrading to 3.0.0+ would see features as "enabled" on the dashboard but "disabled" on settings pages.

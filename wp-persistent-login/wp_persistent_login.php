@@ -9,7 +9,7 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 3.0.2
+ *   Version: 3.0.3
  *
  *
  */
@@ -58,14 +58,14 @@ if ( function_exists( 'persistent_login' ) ) {
 
     // Load freemius.
     require_once WPPL_PLUGIN_PATH . '/includes/freemius.php';
+    // Load uninstall cleanup file.
+    require_once WPPL_PLUGIN_PATH . '/includes/uninstall.php';
+    persistent_login()->add_action( 'after_uninstall', 'persistent_login_uninstall_cleanup' );
     // Load installation file.
     require_once WPPL_PLUGIN_PATH . '/includes/install.php';
     register_activation_hook( __FILE__, 'persistent_login_activate' );
     // Load database upgrade file.
     require_once WPPL_PLUGIN_PATH . '/includes/database-upgrades.php';
-    // Load uninstall cleanup file.
-    require_once WPPL_PLUGIN_PATH . '/includes/uninstall.php';
-    persistent_login()->add_action( 'after_uninstall', 'persistent_login_uninstall_cleanup' );
     // autoload persistent login classes.
     require_once WPPL_PLUGIN_PATH . '/classes/autoload.php';
     // secondary definitions used throughout application.
