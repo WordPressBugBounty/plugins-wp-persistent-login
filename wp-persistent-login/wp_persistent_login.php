@@ -9,7 +9,7 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 3.0.3
+ *   Version: 3.0.4
  *
  *
  */

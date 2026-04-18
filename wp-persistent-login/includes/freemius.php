@@ -47,19 +47,19 @@ if ( !function_exists( 'persistent_login' ) ) {
             // Include Freemius SDK.
             // SDK is auto-loaded through composer
             $persistent_login = fs_dynamic_init( array(
-                'id'             => '1917',
-                'slug'           => 'wp-persistent-login',
-                'type'           => 'plugin',
-                'public_key'     => 'pk_2f0822b0db5884898e4f60e4b1d48',
-                'is_premium'     => false,
-                'premium_suffix' => '',
-                'has_addons'     => false,
-                'has_paid_plans' => true,
-                'trial'          => array(
+                'id'               => '1917',
+                'slug'             => 'wp-persistent-login',
+                'type'             => 'plugin',
+                'public_key'       => 'pk_2f0822b0db5884898e4f60e4b1d48',
+                'is_premium'       => false,
+                'premium_suffix'   => '',
+                'has_addons'       => false,
+                'has_paid_plans'   => true,
+                'trial'            => array(
                     'days'               => 7,
                     'is_require_payment' => true,
                 ),
-                'menu'           => array(
+                'menu'             => array(
                     'slug'    => 'wp-persistent-login',
                     'contact' => false,
                     'support' => false,
@@ -67,7 +67,8 @@ if ( !function_exists( 'persistent_login' ) ) {
                         'slug' => 'users.php',
                     ),
                 ),
-                'is_live'        => true,
+                'is_live'          => true,
+                'is_org_compliant' => true,
             ) );
         }
         return $persistent_login;

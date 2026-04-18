@@ -433,11 +433,28 @@ class WP_Persistent_Login_Settings {
     public function get_limit_reached_logic() {
         
         $options = $this->get_persistent_login_options();
-        if( isset( $options['activeLoginLogic'] ) ) {
-            $active_login_logic = $options['activeLoginLogic'];
-        } else {
-            $active_login_logic = 'automatic';
-        }
+		if( isset( $options['activeLoginLogic'] ) ) {
+			$active_login_logic = sanitize_text_field( $options['activeLoginLogic'] );
+		} else {
+			$active_login_logic = 'automatic';
+		}
+
+		// Backward compatibility for historical values that map to current logic names.
+		if ( 'oldest' === $active_login_logic ) {
+			$active_login_logic = 'automatic';
+		} elseif ( 'reject' === $active_login_logic ) {
+			$active_login_logic = 'block';
+		}
+
+		$valid_logic_values = array(
+			'automatic',
+			'manual',
+			'block',
+		);
+
+		if ( ! in_array( $active_login_logic, $valid_logic_values, true ) ) {
+			$active_login_logic = 'automatic';
+		}
 
         return $active_login_logic;
 
@@ -454,6 +471,24 @@ class WP_Persistent_Login_Settings {
         if( isset($post_data['activeLoginLogic']) ) : 
 							    
             $logic = sanitize_text_field($post_data['activeLoginLogic']);
+
+			// Allow legacy aliases while persisting canonical values.
+			if ( 'oldest' === $logic ) {
+				$logic = 'automatic';
+			} elseif ( 'reject' === $logic ) {
+				$logic = 'block';
+			}
+
+			$valid_logic_values = array(
+				'automatic',
+				'manual',
+				'block',
+			);
+
+			if ( ! in_array( $logic, $valid_logic_values, true ) ) {
+				$logic = 'automatic';
+			}
+
             $options = $this->get_persistent_login_options();
             $options['activeLoginLogic'] = $logic;
 

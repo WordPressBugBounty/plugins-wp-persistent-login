@@ -4,7 +4,7 @@ Donate link:
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -164,6 +164,12 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.0.4 =
+* Fix: User count role status now reflects the saved Persistent Login role settings in premium (including when no roles are selected).
+* Fix: Premium Active Logins "When Limit is Reached" setting now saves correctly from the dashboard settings screen.
+* Improvement: On fresh install, persistent login roles are defaulted to all available roles for consistent defaults in both free and premium.
+* Improvement: Updated upgrade routine to avoid changing existing saved role settings.
 
 = 3.0.3 =
 * Feature: Added 'Stop Count' button to both free and premium dashboards to allow administrators to stop a running user count process.

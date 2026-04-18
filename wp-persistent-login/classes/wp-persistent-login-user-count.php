@@ -144,12 +144,10 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
         if( WPPL_PR === true && class_exists('WP_Persistent_Login_Settings_Premium') ) {
             $premium_settings = new WP_Persistent_Login_Settings_Premium();
             $persistent_roles = $premium_settings->get_login_user_roles();
-            
-            // If no roles are set in premium, default to all roles
-            if( empty($persistent_roles) ) {
-                return $this->get_all_wp_roles();
-            }
-            
+
+            // Always return the saved setting in premium.
+            // If no roles are selected, return an empty array so the dashboard
+            // reflects the settings exactly.
             return $persistent_roles;
         }
         
