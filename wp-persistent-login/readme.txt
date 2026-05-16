@@ -4,7 +4,7 @@ Donate link:
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 3.0.4
+Stable tag: 3.0.5
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -35,6 +35,7 @@ For added security, users can visit their Profile page in the WP Admin area to s
 * Option to limit the number of active logins to 1 per user
 * New logins can be blocked, or the users oldest login ended automatically
 * Manage your own active logins from your Profile page in WP Admin
+* Option to hide the Active Logins section from the WP Admin profile page
 
 ## Login History
 * Notify users of logins from new devices for improved security
@@ -164,6 +165,11 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.0.5 =
+* Feature: Added a toggle to hide the Active Logins section from the WP Admin profile page.
+* Fix: Avoids duplicate sessions being stored on the website cluttering the user profile page.
+* Improvement: Upgrade routine now performs a one-time cleanup that removes old duplicate same-device sessions across existing installs.
 
 = 3.0.4 =
 * Fix: User count role status now reflects the saved Persistent Login role settings in premium (including when no roles are selected).

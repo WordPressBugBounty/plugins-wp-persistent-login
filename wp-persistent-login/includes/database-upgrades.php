@@ -22,6 +22,77 @@ function persistent_login_update_db_check() {
 
 add_action( 'plugins_loaded', 'persistent_login_update_db_check' );
 /**
+ * persistent_login_cleanup_duplicate_sessions
+ *
+ * Removes stale duplicate session rows that were created by older login flows.
+ *
+ * @return int Number of removed sessions.
+ */
+function persistent_login_cleanup_duplicate_sessions() {
+    $users = get_users( array(
+        'fields'   => 'ID',
+        'number'   => -1,
+        'meta_key' => 'session_tokens',
+    ) );
+    if ( empty( $users ) || !is_array( $users ) ) {
+        return 0;
+    }
+    $removed_sessions = 0;
+    foreach ( $users as $user_id ) {
+        $removed_sessions += persistent_login_cleanup_duplicate_sessions_for_user( (int) $user_id );
+    }
+    return $removed_sessions;
+}
+
+/**
+ * persistent_login_cleanup_duplicate_sessions_for_user
+ *
+ * Keeps the newest session for each device signature and removes older duplicates.
+ *
+ * @param  int $user_id User ID.
+ * @return int Number of removed sessions.
+ */
+function persistent_login_cleanup_duplicate_sessions_for_user(  $user_id  ) {
+    $sessions = get_user_meta( $user_id, 'session_tokens', true );
+    if ( !is_array( $sessions ) || empty( $sessions ) ) {
+        return 0;
+    }
+    // Sort newest first so the first session we encounter for a device is preserved.
+    uasort( $sessions, function ( $session_a, $session_b ) {
+        $login_a = ( isset( $session_a['login'] ) ? (int) $session_a['login'] : 0 );
+        $login_b = ( isset( $session_b['login'] ) ? (int) $session_b['login'] : 0 );
+        if ( $login_a === $login_b ) {
+            return 0;
+        }
+        return ( $login_a > $login_b ? -1 : 1 );
+    } );
+    $seen_signatures = array();
+    $cleaned_sessions = array();
+    $removed_sessions = 0;
+    foreach ( $sessions as $verifier => $session ) {
+        if ( empty( $session['ip'] ) || empty( $session['ua'] ) ) {
+            $cleaned_sessions[$verifier] = $session;
+            continue;
+        }
+        $signature = sha1( $session['ip'] . '|' . $session['ua'] );
+        if ( isset( $seen_signatures[$signature] ) ) {
+            $removed_sessions++;
+            continue;
+        }
+        $seen_signatures[$signature] = $verifier;
+        $cleaned_sessions[$verifier] = $session;
+    }
+    if ( $removed_sessions > 0 ) {
+        if ( !empty( $cleaned_sessions ) ) {
+            update_user_meta( $user_id, 'session_tokens', $cleaned_sessions );
+        } else {
+            delete_user_meta( $user_id, 'session_tokens' );
+        }
+    }
+    return $removed_sessions;
+}
+
+/**
  * persistent_login_update_db
  *
  * @param  mixed $persistent_login_db_version
@@ -213,6 +284,13 @@ function persistent_login_update_db(  $persistent_login_db_version  ) {
         $persistent_login_db_version = '3.0.1';
     }
     // 3.0.1 update
+    // One-time cleanup for installs that accumulated duplicate same-device sessions.
+    if ( $persistent_login_db_version === '3.0.1' ) {
+        persistent_login_cleanup_duplicate_sessions();
+        update_option( 'persistent_login_db_version', '3.0.5' );
+        $persistent_login_db_version = '3.0.5';
+    }
+    // 3.0.5 cleanup
     // Return true to indicate that the update was performed
     return true;
 }

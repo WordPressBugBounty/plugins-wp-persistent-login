@@ -570,6 +570,7 @@ class WP_Persistent_Login_Dashboard {
     public function display_active_logins_settings() {
         $settings = new WP_Persistent_Login_Settings();
         $limit_active_logins = $settings->get_limit_active_logins();
+        $hide_active_logins_profile = $settings->get_hide_active_logins_profile();
         $limit_reached_logic = $settings->get_limit_reached_logic();
         $active_logins_features = get_option('persistent_login_feature_flags', array());
         
@@ -614,6 +615,31 @@ class WP_Persistent_Login_Dashboard {
                                         <span class="slider" aria-hidden="true"></span>
                                         <span class="toggle-text toggle-text-on"><?php _e('On', 'wp-persistent-login'); ?></span>
                                         <span class="toggle-text toggle-text-off"><?php _e('Off', 'wp-persistent-login'); ?></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="setting-row">
+                            <div class="setting-label">
+                                <label for="hide-active-logins-profile-toggle"><?php _e('Hide Active Logins on Profile Page', 'wp-persistent-login'); ?></label>
+                                <p class="setting-description"><?php _e('Hide the Active Logins heading and table from the WP Admin profile page.', 'wp-persistent-login'); ?></p>
+                            </div>
+                            <div class="setting-control">
+                                <div class="toggle-switch-container">
+                                    <span id="hide-active-logins-profile-label" class="screen-reader-text">
+                                        <?php _e('Hide Active Logins on Profile Page', 'wp-persistent-login'); ?>
+                                    </span>
+                                    <label class="toggle-switch" for="hide-active-logins-profile-toggle" title="<?php echo $hide_active_logins_profile == '1' ? __('Hidden', 'wp-persistent-login') : __('Visible', 'wp-persistent-login'); ?>">
+                                        <input type="checkbox"
+                                            id="hide-active-logins-profile-toggle"
+                                            name="hideActiveLoginsProfile"
+                                            value="1"
+                                            class="toggle-switch-input"
+                                            <?php checked($hide_active_logins_profile, '1'); ?>>
+                                        <span class="slider" aria-hidden="true"></span>
+                                        <span class="toggle-text toggle-text-on"><?php _e('Hidden', 'wp-persistent-login'); ?></span>
+                                        <span class="toggle-text toggle-text-off"><?php _e('Visible', 'wp-persistent-login'); ?></span>
                                     </label>
                                 </div>
                             </div>

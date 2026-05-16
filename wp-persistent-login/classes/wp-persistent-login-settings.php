@@ -245,6 +245,9 @@ class WP_Persistent_Login_Settings {
 
 		// update user preferences for active logins
 		$this->update_limit_active_logins($post_data);
+		
+		// update the profile page visibility for the active logins section
+		$this->update_hide_active_logins_profile($post_data);
 
 		// update the logic when login limit is reached
         $this->update_limit_reached_logic($post_data);
@@ -422,6 +425,44 @@ class WP_Persistent_Login_Settings {
         }
 
     }
+	
+	/**
+     * get_hide_active_logins_profile
+     *
+     * @return string
+     */
+	public function get_hide_active_logins_profile() {
+
+	    $options = $this->get_persistent_login_options();
+	    if( isset($options['hideActiveLoginsProfile']) ) {
+	        return $options['hideActiveLoginsProfile'];
+	    } else {
+	        return '0';
+	    }
+
+	}
+
+	/**
+     * update_hide_active_logins_profile
+     *
+     * @param  array $post_data
+     * @return bool
+     */
+	protected function update_hide_active_logins_profile($post_data) {
+
+	    $options = $this->get_persistent_login_options();
+
+	    // Store the profile visibility toggle alongside the other active login settings.
+	    if( isset($post_data['hideActiveLoginsProfile']) ) {
+	        $hide_active_logins_profile = sanitize_text_field($post_data['hideActiveLoginsProfile']);
+	    } else {
+	        $hide_active_logins_profile = '0';
+	    }
+	    $options['hideActiveLoginsProfile'] = $hide_active_logins_profile;
+
+	    return update_option('persistent_login_options', $options);
+
+	}
 
 
 

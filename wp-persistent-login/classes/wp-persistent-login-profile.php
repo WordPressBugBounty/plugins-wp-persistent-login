@@ -204,6 +204,12 @@ class WP_Persistent_Login_Profile {
      * @return void
      */
     public function output_user_sessions($user) {
+		
+        // Allow administrators to hide the Active Logins section from the profile screen.
+        $options = get_option( 'persistent_login_options', array() );
+        if( isset( $options['hideActiveLoginsProfile'] ) && '1' === $options['hideActiveLoginsProfile'] ) {
+            return;
+        }
 
         $sessions = $this->get_session_data($user);
 				
