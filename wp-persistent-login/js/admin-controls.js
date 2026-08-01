@@ -276,7 +276,7 @@ function handleFeatureToggle() {
         feature: feature,
         option_name: optionName,
         enabled: isEnabled,
-        nonce: wppl_nonce // This nonce is localized from PHP
+        nonce: wppl_nonce.nonce // This nonce is localized from PHP
     };
     
     jQuery.ajax({
@@ -366,7 +366,7 @@ function updateUserCountStatus() {
         url: ajaxurl,
         data: {
             action: 'wppl_get_user_count_status',
-            nonce: wppl_nonce
+            nonce: wppl_nonce.nonce // This nonce is localized from PHP
         },
         success: function(response) {
             if (response.success) {

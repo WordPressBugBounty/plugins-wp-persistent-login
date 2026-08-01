@@ -10,12 +10,13 @@ class WP_Persistent_Login_Manage_Sessions extends WP_User_Meta_Session_Tokens {
     
     // allow us to update sessions by verifier instead of unhashed token
     public function persistent_login_update_session($verifier, $session = null) {
+        // leaving $session null will remove the session from the database
         $this->update_session($verifier, $session);
     }
     
     // allow us to get a session by verifier instead of unhashed token
     public function persistent_login_get_session($verifier) {
-        $this->get_session($verifier);
+        return $this->get_session($verifier);
     }
     
     

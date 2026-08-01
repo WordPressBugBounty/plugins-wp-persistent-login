@@ -9,12 +9,12 @@
  *   Author URI:  https://persistentlogin.com/
  * 	 Text Domain: wp-persistent-login
  *   Domain Path: /languages
- *   Version: 3.0.5
+ *   Version: 3.1.0
  *
  *
  */
 /*
-	Copyright 2018 Luke Seager  (email : luke@persistentlogin.com)
+	Copyright 2026 Luke Seager  (email : luke@persistentlogin.com)
 
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License, version 2, as

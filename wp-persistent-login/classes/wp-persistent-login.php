@@ -11,7 +11,9 @@ defined( 'WPINC' ) || die( 'Process terminated.' );
 class WP_Persistent_Login {
 
 
-	public $expiration;
+	public int $expiration;
+	public ?string $device_id = NULL;
+	public ?int $device_id_expiration = NULL;
 
 
     /**
@@ -26,19 +28,50 @@ class WP_Persistent_Login {
 	 */
 	public function __construct() {
 
+		// set the default expiration time to 1 year
 		$this->expiration = YEAR_IN_SECONDS;
+
+		// fetch or create the device_id cookie and store its value in the class property
+		if (isset($_COOKIE['wppl_device_id']) ) {
+			$clean_cookie = stripslashes( $_COOKIE[ "wppl_device_id" ] );
+			$cookie = json_decode( $clean_cookie );
+			$device_id = $cookie->data->wppl_device_id ?? NULL;
+			$this->device_id = $device_id;
+		} else {
+			// $this->device_id = wp_generate_uuid4();
+			$this->device_id = NULL; // device_id will be generated later when the cookie is created
+		}
+
+		// fetch or create the device_id cookie expiration and store its value in the class property
+		if (isset($_COOKIE['wppl_device_id']) ) {
+			$clean_cookie = stripslashes( $_COOKIE[ "wppl_device_id" ] );
+			$cookie = json_decode( $clean_cookie );
+			$cookie_expiration = $cookie->expiry ?? NULL;
+			$this->device_id_expiration = $cookie_expiration;
+		} else {
+			$this->device_id_expiration = time() + $this->expiration;
+		}
 
 		// Check if persistent login feature is enabled
 		$featureOptions = get_option('persistent_login_feature_flags', array());
 		if( !isset($featureOptions['enablePersistentLogin']) || $featureOptions['enablePersistentLogin'] !== '1' ) {
 			return; // stop processing if persistent login is not enabled
 		}
+
+		// set a cookie with a unique identifier for the device when a user logs in.
+		add_action( 'wp_login', array( $this, 'set_device_uuid_cookie' ), 10, 2 );
 		
 		// set the expiration time when a user logs in
 		add_filter( 'auth_cookie_expiration', array( $this, 'set_login_expiration' ), 10, 3 );
 
 		// increase the cookie time when a user revisits
 		add_action( 'set_current_user', array( $this, 'update_auth_cookie' ), 10, 0 );
+
+		// update the device UUID cookie expiration time when a user logs in again to keep the cookie alive
+		add_action( 'set_current_user', array( $this, 'update_device_uuid_cookie_expiration' ), 20, 0 );
+
+		// add device_id to the session tokens when a user logs in
+		add_filter( 'attach_session_information', array( $this, 'update_session_tokens_with_device_id' ), 10, 2 );
 
 		// set user meta if the user want to be remembered
 		add_filter( 'secure_signon_cookie', array( $this, 'remember_me_meta' ), 20, 2 ); 
@@ -55,6 +88,150 @@ class WP_Persistent_Login {
 
 		// add support for persistent login with WP Web WooCommerce Social Login
 		add_action('woo_slg_login_user_authenticated', array( $this, 'wpweb_woocommerce_remember_on_login' ), 20, 2 );
+
+	}
+
+
+
+	/**
+	 * create_device_uuid_cookie
+	 * 
+	 * Either creates a new device UUID cookie or updates the existing one with a new expiration time.
+	 */
+	public function create_device_uuid_cookie() {
+
+		$data = (object) array( "wppl_device_id" => $this->device_id );
+		$cookieData = (object) array( "data" => $data, "expiry" => $this->device_id_expiration );
+
+		setcookie(
+			'wppl_device_id',
+			json_encode( $cookieData ),
+			time() + $this->expiration,
+			COOKIEPATH,
+			COOKIE_DOMAIN,
+			is_ssl(),
+			true
+		);
+
+		return $this->device_id;
+
+	}
+
+
+	/**
+	 * set_device_uuid_cookie
+	 */
+	public function set_device_uuid_cookie($user_login, $user) {
+
+		// update existing cookie or create a new cookie if the device ID is not set
+		$this->create_device_uuid_cookie();
+		
+	}
+
+	/**
+	 * update_device_uuid_cookie_expiration
+	 */
+	public function update_device_uuid_cookie_expiration() {
+
+		// 1. Handle logged-in users who do NOT have a device_id cookie yet
+		if ( ! isset( $_COOKIE['wppl_device_id'] ) && is_user_logged_in() ) {
+
+			$user_id = get_current_user_id();
+
+			// Concurrency Lock: Prevent multiple background requests from running this simultaneously
+			// if ( get_transient( 'wppl_backfill_lock_' . $user_id ) ) {
+			// 	return;
+			// }
+			// set_transient( 'wppl_backfill_lock_' . $user_id, 'locked', 10 ); // Lock for 10 seconds
+
+			// Runtime Loop Lock: Stop recursion loops or multiple hooks in the same request thread
+			static $is_processing = false;
+			if ( $is_processing ) {
+				return;
+			}
+			$is_processing = true;
+
+			// Generate the device_id if it doesn't exist yet
+			$this->device_id = wp_generate_uuid4();
+			
+			// Generate a fresh cookie
+			$this->create_device_uuid_cookie();
+			
+			// Update their active session data in the DB so it includes this new device_id
+			$manager = WP_Session_Tokens::get_instance( $user_id );
+			$cookie  = wp_parse_auth_cookie( '', 'logged_in' );
+			
+			if ( $cookie && ! empty( $cookie['token'] ) ) {
+				$session = $manager->get( $cookie['token'] );
+				if ( $session ) {
+					$session['wppl_device_id'] = $this->device_id;
+					$manager->update( $cookie['token'], $session );
+				}
+			}
+
+			// Backfill the custom login history table so history features don't break
+			global $wpdb;
+			$history_table = $wpdb->prefix . 'wppl_login_history';
+
+			// Verify table exists before inserting to avoid crashes during updates
+			$table_exists = $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $history_table ) );
+
+			if ( $table_exists ) {
+				// Check if a record already exists to prevent duplicate rows on page refreshes
+				$record_exists = $wpdb->get_var( $wpdb->prepare(
+					"SELECT COUNT(*) FROM $history_table WHERE user_id = %d AND device_id = %s",
+					$user_id,
+					$this->device_id
+				) );
+
+				if ( ! $record_exists ) {
+					$wpdb->insert(
+						$history_table,
+						array(
+							'user_id'    => $user_id,
+							'device_id'  => $this->device_id,
+							'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+							'ip'         => $_SERVER['REMOTE_ADDR'] ?? '',
+							'created_at' => current_time( 'mysql' )
+						),
+						array( '%d', '%s', '%s', '%s', '%s' )
+					);
+				}
+			}
+
+			// Release the lock
+			// delete_transient( 'wppl_backfill_lock_' . $user_id );
+			
+			return;
+		}
+
+		// 2. Handle logged-in users who already have a device_id cookie
+		if (isset($_COOKIE['wppl_device_id']) ) {
+
+			$does_cookie_need_updating = $this->does_cookie_need_updating( $this->device_id_expiration );
+
+			if( $does_cookie_need_updating == true ) {
+				$this->create_device_uuid_cookie();
+			}
+
+		}
+
+	}
+
+
+	/**
+	 * update_session_tokens_with_device_id
+	 * 	 * 
+	 * Sets a cookie with a unique identifier for the device. This is used to identify the device for active login management and login history features.
+	 * 
+	 * @param array $session_data The session data array that will be stored in the database for the current session.
+	 * @param int $user_id The ID of the user who is logging in.
+	 */
+	public function update_session_tokens_with_device_id($session_data, $user_id) {
+
+		$session_data['wppl_device_id'] = $this->device_id; // add the device ID to the session data
+
+		return $session_data;
 
 	}
 
@@ -185,6 +362,7 @@ class WP_Persistent_Login {
 				
 				// if the user should be remembered, reset the cookie so the cookie time is reset
 					wp_set_auth_cookie( $user->ID, true, is_ssl(), $session_token );
+
 
 			endif; // end if remember me is set	
 
@@ -475,29 +653,23 @@ class WP_Persistent_Login {
 	 * @param  int $user_id
 	 * @return void
 	 */
-	protected function remove_duplicate_sessions( $sessions, $verifier, $user_id ) {
+	public static function remove_duplicate_sessions( $sessions, $verifier, $user_id ) {
+
 
 		// if the verifier doesn't exist, stop processing
-		if( 
-			!isset( $sessions[$verifier]['ip'] )
-			||
-			!isset( $sessions[$verifier]['ua'] )
-		 ) {
+		if( !isset( $sessions[$verifier]['device_id'] )) {
 			return;
 		}
 
 		foreach( $sessions as $key => $session ) {
 			if( $key !== $verifier ) { // excludes the current session
 
-				// check if the $session has an IP and UA
-				if( isset($session['ip']) && isset($session['ua']) ) {
+				// check if the $session has a device ID
+				if( isset($session['device_id']) ) {
 
-					// if we're on the same user agent and same IP, we're probably on the same device
+					// if we're on the same device id, we're probably on the same device
 					if( 
-                        ($session['ip'] === $sessions[$verifier]['ip']) 
-						&&
-                        ($session['ua'] === $sessions[$verifier]['ua'])
-                    ) {
+                        ($session['device_id'] === $sessions[$verifier]['device_id']) ) {
 
 						// delete the duplicate session
 						$updateSession = new WP_Persistent_Login_Manage_Sessions( $user_id );

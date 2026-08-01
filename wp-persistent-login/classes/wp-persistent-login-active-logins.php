@@ -108,44 +108,6 @@ class WP_Persistent_Login_Active_Logins {
 
     }
 
-    
-    /**
-     * get_user_location
-     *
-     * @param  string $remote_address
-     * @return array|bool
-     */
-    protected function get_user_location($remote_address) {
-
-        $ip_data = unserialize(file_get_contents('http://www.geoplugin.net/php.gp?ip='.$remote_address));
-        $city = $ip_data['geoplugin_city'];
-        $region = $ip_data['geoplugin_regionName'];
-        $country = $ip_data['geoplugin_countryName'];
-
-        if( $city !== null || $region !== null || $country !== null ) {
-
-            $output = array();
-
-            if( $city !== null ) {
-                $output[] = $city;
-            }
-            if( $region !== null ) {
-                $output[] = $region;
-            }
-            if( $country !== null ) {
-                $output[] = $country;
-            }
-
-            return $output;
-
-        } else {
-            
-            return false;
-        
-        }
-        
-
-    }
 
 
 
@@ -232,54 +194,9 @@ class WP_Persistent_Login_Active_Logins {
             return;
         }
 
-        $this->remove_duplicate_sessions( $sessions, $current_session, $user->ID );
+        WP_Persistent_Login::remove_duplicate_sessions( $sessions, $current_session, $user->ID );
 
     }
-
-
-    /**
-     * remove_duplicate_sessions
-     *
-     * Removes sessions that match the current device's IP address and user agent.
-     *
-     * @param  array  $sessions Session data.
-     * @param  string $verifier  Current session verifier.
-     * @param  int    $user_id   User ID.
-     * @return void
-     */
-    protected function remove_duplicate_sessions( $sessions, $verifier, $user_id ) {
-
-        // If the current session is missing the required metadata, do nothing.
-        if(
-            !isset( $sessions[ $verifier ]['ip'] )
-            ||
-            !isset( $sessions[ $verifier ]['ua'] )
-        ) {
-            return;
-        }
-
-        foreach( $sessions as $key => $session ) {
-            if( $key !== $verifier ) {
-
-                // Only remove sessions that appear to come from the same device.
-                if( isset( $session['ip'] ) && isset( $session['ua'] ) ) {
-                    if(
-                        ( $session['ip'] === $sessions[ $verifier ]['ip'] )
-                        &&
-                        ( $session['ua'] === $sessions[ $verifier ]['ua'] )
-                    ) {
-
-                        $session_manager = new WP_Persistent_Login_Manage_Sessions( $user_id );
-                        $session_manager->persistent_login_update_session( $key );
-
-                    }
-                }
-
-            }
-        }
-
-    }
-
 
 
 	/**
@@ -407,14 +324,14 @@ class WP_Persistent_Login_Active_Logins {
 
         $user_id = $user->ID;
 
-        // setup a session manager
-        $session_manager = new WP_Persistent_Login_Manage_Sessions( $user_id );
-
         // invalid sessions = current sessions, plus this login, minus the limit
         $invalid_sessions = $this->get_invalid_session_count( $user_id );
 
         // if there are invalid sessions remove them
         if( $invalid_sessions > 0 ) {
+
+            // setup a session manager
+            $session_manager = new WP_Persistent_Login_Manage_Sessions( $user_id );
 
             // get all users sessions, oldest first
             $sessions = $this->get_user_sessions( $user, SORT_ASC );
@@ -424,6 +341,7 @@ class WP_Persistent_Login_Active_Logins {
             // remove all invalid sessions, leaving only the limit
             for( $i = 0; $i < $invalid_sessions; $i++ ) {
                 $session_token = $session_tokens[$i];
+                // remove the session by verifier, exclude session data to remove the session from db
                 $session_manager->persistent_login_update_session( $session_token );
             }
         

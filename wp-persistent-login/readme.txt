@@ -3,8 +3,8 @@ Contributors: lukeseager, freemius
 Donate link: 
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
-Tested up to: 6.9
-Stable tag: 3.0.5
+Tested up to: 7.0
+Stable tag: 3.1.0
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -166,8 +166,20 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 
 == Changelog == 
 
+= 3.1.0 =
+* Improvement: Updated device fingerprinting to much more reliable solution. Implementing with Persistent Login, Active Login and Login History features. This helps reduce the number of duplicate sessions. 
+* Improvement: Retrofitting new device fingerprinting to existing sessions for a seamless transition.
+* Fix (premium): Adding missing 'end all sessions' button from Persistent Login Premium. 
+* Updated Freemius SDK.
+
 = 3.0.5 =
 * Feature: Added a toggle to hide the Active Logins section from the WP Admin profile page.
+* Fix: Added missing `break` statement after the 'manual' case in the login limit logic, preventing unintended fall-through to the 'block' case.
+* Fix: The "Reject new login" (block) option is now correctly enforced for logins via Nextend Social Login.
+* Fix: Active Login roles can now be fully cleared — previously, unchecking all roles on the settings page would not save an empty selection.
+* Fix: Maximum Active Logins value is now properly sanitised on save, ensuring it is always stored as a positive integer.
+* Fix: The "Redirect Page" setting for 'manual' mode now falls back to the home URL instead of producing an invalid redirect when no page has been configured.
+* Improvement: The "Redirect Settings" section on the Active Login Settings page is now only visible when the "Let user select which session to end" option is chosen, matching the original conditional UI behaviour.
 * Fix: Avoids duplicate sessions being stored on the website cluttering the user profile page.
 * Improvement: Upgrade routine now performs a one-time cleanup that removes old duplicate same-device sessions across existing installs.
 

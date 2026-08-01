@@ -472,7 +472,7 @@ class WP_Persistent_Login_Dashboard {
                             </div>
                         </div>
                     </div>
-                      <div class="wppl-box-outline bg-light-green">
+                    <div class="wppl-box-outline bg-light-green">
                         <h3><?php _e('Session Management', 'wp-persistent-login'); ?></h3>
                         
                         <div class="session-management-controls">

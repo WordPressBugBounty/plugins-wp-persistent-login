@@ -74,7 +74,7 @@ class WP_Persistent_Login_Settings {
 		wp_enqueue_style( 'wppl_dashboard_styles', WPPL_PLUGIN_URL . '/css/dashboard.css', array(), '1.1' );
         
         // Add nonce for AJAX requests
-        wp_localize_script( 'wppl_admin_controls', 'wppl_nonce', wp_create_nonce( 'wppl_feature_toggle_nonce' ) );
+        wp_localize_script( 'wppl_admin_controls', 'wppl_nonce', array( 'nonce' => wp_create_nonce('wppl_feature_toggle_nonce') ) );
 	}
     
     /**

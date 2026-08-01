@@ -8,7 +8,7 @@ defined( 'WPINC' ) || die( 'Well, get lost.' );
  *
  * @since 2.0.0
  */
-class WP_Persistent_Login_Login_History {
+class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
 
     protected $history_enabled;
     protected $has_table;
@@ -21,6 +21,9 @@ class WP_Persistent_Login_Login_History {
 	 * @return void
 	 */
 	public function __construct() {
+
+        // call the parent constructor to initialise the device_id
+        parent::__construct();
 
         // check if the login history feature is enabled
         $featureOptions = get_option( 'persistent_login_feature_flags', array() );
@@ -35,7 +38,7 @@ class WP_Persistent_Login_Login_History {
 
         if( $this->history_enabled === true ) {
             // after login check if they user is using a known device
-            add_action( 'wp_login', array($this, 'check_login_history'), 10, 2 );
+            add_action( 'wp_login', array($this, 'check_login_history'), 99, 2 );
         }
 
         // Hook into profile page to display login history (available for all users)
@@ -48,6 +51,9 @@ class WP_Persistent_Login_Login_History {
 
     /**
      * check_login_history
+     * 
+     * @param string $user_login
+     * @param WP_User $user
      */
     public function check_login_history($user_login, $user) {
 
@@ -63,17 +69,12 @@ class WP_Persistent_Login_Login_History {
                 $this->notify_user_of_new_login($user->ID, $login_history_id);
             }
         
+        // if the user is using a known device, update the last login date and the IP address in the login history table
         } else {
 
-            // if the user is using a known device, update the last login date
-            
-            // get the current device id
-            $device_id = $this->create_login_history_device_id( $user->ID, $_SERVER['HTTP_USER_AGENT'], $_SERVER['REMOTE_ADDR'] );
-
-            // update the last login date
             global $wpdb;
             $table_name = $wpdb->prefix . $this->table_name;
-            $wpdb->update( $table_name, array('created_at' => current_time('mysql')), array('device_id' => $device_id) );
+            $wpdb->update( $table_name, array('created_at' => current_time('mysql'), 'ip' => $_SERVER['REMOTE_ADDR']), array('device_id' => $this->device_id) );
 
         }
 
@@ -223,18 +224,17 @@ class WP_Persistent_Login_Login_History {
     /**
      * add_device_to_login_history
      *
+     * @param  int $user_id
      * @return bool
      */
     public function add_device_to_login_history($user_id) {
-        
-        // add a new entry to the login history table
+
         $ua = $_SERVER['HTTP_USER_AGENT'];
         $ip = $_SERVER['REMOTE_ADDR'];
-        $device_id = $this->create_login_history_device_id( $user_id, $ua, $ip );
 
         global $wpdb;
         $table_name = $wpdb->prefix . $this->table_name;
-        $data = array('user_id' => $user_id, 'device_id' => $device_id, 'user_agent' => $ua, 'ip' => $ip);
+        $data = array('user_id' => $user_id, 'device_id' => $this->device_id, 'user_agent' => $ua, 'ip' => $ip);
         $format = array('%d', '%s', '%s','%s');
         $wpdb->insert($table_name, $data, $format);
         $item_id = $wpdb->insert_id;
@@ -268,24 +268,14 @@ class WP_Persistent_Login_Login_History {
      * is_known_device
      *
      * @param  int $user_id
-     * @param  string $cookie
      * @return bool
      */
     public function is_known_device($user_id) {
-        
-        // get the current user agent string
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
-
-        // get the current ip address
-        $ip = $_SERVER['REMOTE_ADDR'];
-
-        // create a unique id for the login history table
-        $device_id = $this->create_login_history_device_id( $user_id, $user_agent, $ip );
-
+    
         // check if the device_id exists in the login history table
         global $wpdb;
         $table_name = $wpdb->prefix . $this->table_name;
-        $sql = "SELECT * FROM $table_name WHERE device_id = '$device_id' AND user_id = '$user_id' LIMIT 1;";
+        $sql = "SELECT * FROM $table_name WHERE device_id = '$this->device_id' AND user_id = '$user_id' LIMIT 1;";
         $result = $wpdb->get_results( $sql );
 
         if( count($result) > 0 ) {
@@ -301,8 +291,7 @@ class WP_Persistent_Login_Login_History {
      * notify_user_of_new_login
      *
      * @param  int $user_id
-     * @param  string $cookie
-     * @param  array $login_data
+     * @param  int $login_history_id
      * @return bool
      */
     private function notify_user_of_new_login($user_id, $login_history_id) {
@@ -323,25 +312,8 @@ class WP_Persistent_Login_Login_History {
 
         // email the user about a new login so they are aware.
         $email = new WP_Persistent_Login_Email();
-        $email->send_new_login_email($user_email, $login_data);
+        return $email->send_new_login_email($user_email, $login_data);
 
-    }
-
-
-    /**
-     * create_login_history_device_id
-     * 
-     * @param int $user_id
-     * @param string $ua
-     * @param string $ip
-     */
-    private function create_login_history_device_id($user_id, $ua, $ip) {
-
-        // create a unique id for the login history table
-        $device_id = $user_id . '_' . md5( $user_id . $ua );
-
-        return $device_id;
-    
     }
 
 
@@ -443,8 +415,8 @@ class WP_Persistent_Login_Login_History {
         $html .= '<table class="wppl-table wp-list-table widefat fixed striped">';
         $html .= '<thead>';
         $html .= '<tr>';
-        $html .= '<th>' . __('Date & Time', 'wp-persistent-login') . '</th>';
-        $html .= '<th>' . __('IP Address', 'wp-persistent-login') . '</th>';
+        $html .= '<th>' . __('Last login on device', 'wp-persistent-login') . '</th>';
+        $html .= '<th>' . __('Last IP Address', 'wp-persistent-login') . '</th>';
         $html .= '<th>' . __('Browser/Device', 'wp-persistent-login') . '</th>';
         $html .= '</tr>';
         $html .= '</thead>';
@@ -461,8 +433,8 @@ class WP_Persistent_Login_Login_History {
             );
 
             $html .= '<tr>';
-            $html .= '<td data-label="' . esc_attr(__('Date & Time', 'wp-persistent-login')) . '">' . esc_html($formatted_date) . '</td>';
-            $html .= '<td data-label="' . esc_attr(__('IP Address', 'wp-persistent-login')) . '">' . esc_html($record->ip) . '</td>';
+            $html .= '<td data-label="' . esc_attr(__('Last login on device', 'wp-persistent-login')) . '">' . esc_html($formatted_date) . '</td>';
+            $html .= '<td data-label="' . esc_attr(__('Last IP Address', 'wp-persistent-login')) . '">' . esc_html($record->ip) . '</td>';
             $html .= '<td data-label="' . esc_attr(__('Browser/Device', 'wp-persistent-login')) . '">' . esc_html($user_agent_info) . '</td>';
             $html .= '</tr>';
         }
