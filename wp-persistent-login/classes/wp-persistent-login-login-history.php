@@ -74,7 +74,14 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
 
             global $wpdb;
             $table_name = $wpdb->prefix . $this->table_name;
-            $wpdb->update( $table_name, array('created_at' => current_time('mysql'), 'ip' => $_SERVER['REMOTE_ADDR']), array('device_id' => $this->device_id) );
+            $wpdb->update( 
+                $table_name, 
+                array(
+                    'created_at' => current_time('mysql'), 
+                    'ip' => $_SERVER['REMOTE_ADDR']), 
+                    array('device_id' => $this->device_id
+                ) 
+            );
 
         }
 
@@ -134,11 +141,13 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
 
         $table_name = $wpdb->prefix . $this->table_name;
 
-        // SQL query to check if the table exists
-        $sql = "SHOW TABLES LIKE '$table_name';";
-
         // Get the result of the query
-        $result = $wpdb->get_var( $sql );
+        $result = $wpdb->get_var( 
+            $wpdb->prepare( 
+                "SHOW TABLES LIKE %s", 
+                $table_name
+            )
+        );
 
         // Return true if the table exists, false otherwise
         return (bool) $result;
@@ -234,7 +243,12 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
 
         global $wpdb;
         $table_name = $wpdb->prefix . $this->table_name;
-        $data = array('user_id' => $user_id, 'device_id' => $this->device_id, 'user_agent' => $ua, 'ip' => $ip);
+        $data = array(
+            'user_id' => $user_id,
+            'device_id' => $this->device_id,
+            'user_agent' => $ua,
+            'ip' => $ip
+        );
         $format = array('%d', '%s', '%s','%s');
         $wpdb->insert($table_name, $data, $format);
         $item_id = $wpdb->insert_id;
@@ -245,22 +259,29 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
 
     /**
      * fetch_login_history
-     * 
+     *
      * @param int $id
      */
-    private function fetch_login_history($id) {
-
+    private function fetch_login_history( $id ) {
         global $wpdb;
         $table_name = $wpdb->prefix . $this->table_name;
-        $sql = "SELECT * FROM $table_name WHERE id = '$id' LIMIT 1;";
+
+        // Ensure $id is treated as an integer
+        $id = absint( $id );
+
+        // Safe, prepared query
+        $sql = $wpdb->prepare(
+            "SELECT * FROM $table_name WHERE id = %d LIMIT 1",
+            $id
+        );
+
         $result = $wpdb->get_results( $sql, ARRAY_A );
 
-        if( $result ) {
+        if ( $result ) {
             return $result[0];
         } else {
             return false;
         }
-
     }
 
     
@@ -275,8 +296,12 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
         // check if the device_id exists in the login history table
         global $wpdb;
         $table_name = $wpdb->prefix . $this->table_name;
-        $sql = "SELECT * FROM $table_name WHERE device_id = '$this->device_id' AND user_id = '$user_id' LIMIT 1;";
-        $result = $wpdb->get_results( $sql );
+
+        $safe_sql = $wpdb->prepare( 
+            "SELECT * FROM $table_name WHERE device_id = %s AND user_id = %d LIMIT 1;", 
+            $this->device_id, $user_id 
+        );
+        $result = $wpdb->get_results( $safe_sql );
 
         if( count($result) > 0 ) {
             return true;
@@ -394,6 +419,8 @@ class WP_Persistent_Login_Login_History extends WP_Persistent_Login {
         if( !is_numeric($user_id) || $user_id <= 0 ) {
             return '<p>' . __('Invalid user ID.', 'wp-persistent-login') . '</p>';
         }
+
+        $user_id = (int) $user_id;
 
         global $wpdb;
 

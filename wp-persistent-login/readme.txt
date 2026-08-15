@@ -4,7 +4,7 @@ Donate link:
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 3.1.0
+Stable tag: 3.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -165,6 +165,11 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.1.1 = 
+* Security update: Security related changes. It is recommended for all users. 
+* Improvement: Detecting logged in user count transient deletion and restarting count. 
+* Fix: Fixed stop user count button not working.
 
 = 3.1.0 =
 * Improvement: Updated device fingerprinting to much more reliable solution. Implementing with Persistent Login, Active Login and Login History features. This helps reduce the number of duplicate sessions. 

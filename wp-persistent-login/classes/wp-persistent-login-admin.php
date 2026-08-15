@@ -27,6 +27,8 @@ class WP_Persistent_Login_Admin {
 
 		add_filter( 'plugin_action_links_'.WPPL_PLUGIN_BASENAME, array($this, 'add_settings_link') );
 		add_action('admin_menu', array($this, 'create_menu_page') );
+
+		add_action( 'wp_ajax_wppl_stop_user_count', array( $this, 'ajax_stop_user_count' ) );
 		
 	}
 
@@ -88,6 +90,62 @@ class WP_Persistent_Login_Admin {
             $dashboard->display_dashboard();
         }
     }
+
+
+	/**
+     * AJAX handler to stop user count on demand
+     *
+     * @since 2.3.0
+     * @return void
+     */
+    public function ajax_stop_user_count() {
+
+        // Verify nonce for security
+        if ( ! check_ajax_referer( 'wppl_stop_user_count', 'nonce', false ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Security check failed', 'wp-persistent-login' )
+                )
+            );
+        }
+        // if ( ! wp_verify_nonce( $_POST['nonce'], 'wppl_stop_user_count' ) ) {
+        //     wp_send_json_error( array( 'message' => __( 'Security check failed', 'wp-persistent-login' ) ) );
+        //     return;
+        // }
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have sufficient permissions to perform this action.', 'wp-persistent-login' ) ) );
+            return;
+        }
+
+        try {
+            // Initialize the user count class
+            $count = new WP_Persistent_Login_User_Count();
+            
+            // Check if a count is actually running
+            if ( ! $count->is_user_count_running() ) {
+                wp_send_json_error( array( 
+                    'message' => __( 'No user count is currently running.', 'wp-persistent-login' )
+                ) );
+                return;
+            }
+            
+            // Stop the count and update the user count breakdown
+            $count->stop_count(true);
+
+            wp_send_json_success( array(
+                'message' => __( 'User count stopped successfully! The count data has been saved.', 'wp-persistent-login' )
+            ) );
+
+        } catch ( Exception $e ) {
+            wp_send_json_error( array( 
+                'message' => sprintf( __( 'Failed to stop user count: %s', 'wp-persistent-login' ), $e->getMessage() )
+            ) );
+        }
+    }
+
+	
 }
 
 ?>

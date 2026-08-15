@@ -415,6 +415,21 @@ function updateUserCountUI(data) {
             }
         });
     }
+
+    // show transient warning to the user if present in the response
+    if (data.warning) {
+        // add warning to .wppl-transient-messages-container
+        const transientContainer = jQuery('.wppl-transient-messages-container');
+        
+        // check if warning already exists to avoid duplicates
+        const existingWarning = transientContainer.find('.notice-warning');
+
+        if (transientContainer.length > 0 && existingWarning.length === 0) {
+            const warningEl = jQuery('<div class="notice notice-warning is-dismissible"><p></p></div>');
+            warningEl.find('p').text(data.warning);
+            transientContainer.append(warningEl);
+        }
+    }
 }
 
 function formatRoleName(role) {

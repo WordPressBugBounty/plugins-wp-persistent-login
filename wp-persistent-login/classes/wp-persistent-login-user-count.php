@@ -853,6 +853,16 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
         // get the current role being counted
         $role = $this->get_current_counting_role();
 
+        if( $role === false || $role === 0 ) {
+            // If no role is set, stop and restart the count, warn the user on the dashboard
+            $this->stop_count(false);
+            $this->start_count();
+
+            $warning_message = __('The user count was restarted because the current role transient had been deleted.', 'wp-persistent-login');
+            set_transient('persistent_login_user_count_warning', $warning_message, 60);
+            return;
+        }
+
         // count the next block of users
         $args = array(
             'role' => $role,
@@ -866,7 +876,17 @@ class WP_Persistent_Login_User_Count extends WP_Persistent_Login_Admin {
         $users = count(get_users($args));
 
         // update the user count with this block
-        $user_count = get_transient('persistent_login_user_count_temporary');
+        $user_count = get_transient('persistent_login_user_count_temporary') ?: NULL;
+
+        if( $user_count === NULL ) {
+            // The temporary user count transient is missing, stop the count and restart it
+            $this->stop_count(false);
+            $this->start_count();
+            $warning_message = __('The user count was restarted because the temporary user count transient had been deleted.', 'wp-persistent-login');
+            set_transient('persistent_login_user_count_warning', $warning_message, 60);
+            return;
+        }
+
         $user_count[$role] += $users;
         set_transient( 'persistent_login_user_count_temporary', $user_count);
 

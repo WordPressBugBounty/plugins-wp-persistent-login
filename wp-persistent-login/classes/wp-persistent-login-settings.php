@@ -70,7 +70,7 @@ class WP_Persistent_Login_Settings {
 		if( $hook !== 'users_page_wp-persistent-login' ) {
 			return;
 		}
-		wp_enqueue_script( 'wppl_admin_controls', WPPL_PLUGIN_URL . '/js/admin-controls.js', array('jquery'), '1.1' );
+		wp_enqueue_script( 'wppl_admin_controls', WPPL_PLUGIN_URL . '/js/admin-controls.js', array('jquery'), '1.2' );
 		wp_enqueue_style( 'wppl_dashboard_styles', WPPL_PLUGIN_URL . '/css/dashboard.css', array(), '1.1' );
         
         // Add nonce for AJAX requests
@@ -1302,9 +1302,11 @@ Thanks,
 	
 		
 	} // end persistent_login_options_display	 
-	    /**
+	
+	/**
      * AJAX handler for getting user count status
-     */    public function ajax_get_user_count_status() {
+     */    
+	public function ajax_get_user_count_status() {
         // Check nonce for security
         if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'wppl_feature_toggle_nonce' ) ) {
             wp_send_json_error( array( 'message' => 'Security check failed' ) );
@@ -1325,7 +1327,7 @@ Thanks,
         $current_role_message = $user_count->output_current_counting_role();
         
         // Get current temporary count data
-        $temp_counts = get_transient('persistent_login_user_count_temporary');
+        $temp_counts = get_transient('persistent_login_user_count_temporary') ?: NULL;
         $final_counts = get_option('persistent_login_user_count');
         
         // Merge temporary counts with the final counts
@@ -1338,12 +1340,17 @@ Thanks,
             }
         }
 
+		// check if there is a persistent_login_user_count_warning transient
+		$warning_transient = get_transient('persistent_login_user_count_warning') ?: false;
+
         
         wp_send_json_success(array(
             'is_counting' => true,
             'current_role' => $current_role,
             'current_role_message' => $current_role_message,
-            'role_counts' => $role_counts
+            'role_counts' => $role_counts,
+			'temp_counts' => $temp_counts,
+            'warning' => $warning_transient
         ));
     }
 	
