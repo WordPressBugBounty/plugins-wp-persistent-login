@@ -29,6 +29,7 @@ class WP_Persistent_Login_Admin {
 		add_action('admin_menu', array($this, 'create_menu_page') );
 
 		add_action( 'wp_ajax_wppl_stop_user_count', array( $this, 'ajax_stop_user_count' ) );
+        add_action( 'wp_ajax_wppl_start_user_count', array( $this, 'ajax_start_user_count' ) );
 		
 	}
 
@@ -146,6 +147,46 @@ class WP_Persistent_Login_Admin {
     }
 
 	
+    /**
+     * AJAX handler to start user count on demand
+     *
+     * @since 2.3.0
+     * @return void
+     */
+    public function ajax_start_user_count() {
+
+        // Verify nonce for security
+        if ( ! check_ajax_referer( 'wppl_start_user_count', 'nonce', false ) ) {
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Security check failed', 'wp-persistent-login' )
+                )
+            );
+        }
+
+        // Check user capabilities
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_send_json_error( array( 'message' => __( 'You do not have sufficient permissions to perform this action.', 'wp-persistent-login' ) ) );
+            return;
+        }
+
+        try {
+            // Initialize the user count class
+            $count = new WP_Persistent_Login_User_Count();
+            
+            // Start the count
+            $count->start_count();
+
+            wp_send_json_success( array(
+                'message' => __( 'User count started successfully!', 'wp-persistent-login' )
+            ) );
+
+        } catch ( Exception $e ) {
+            wp_send_json_error( array( 
+                'message' => sprintf( __( 'Failed to start user count: %s', 'wp-persistent-login' ), $e->getMessage() )
+            ) );
+        }
+    }
 }
 
 ?>

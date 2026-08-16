@@ -4,7 +4,7 @@ Donate link:
 Tags: login, active logins, sessions, session management, concurrent logins, remember me, login history
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 3.1.1
+Stable tag: 3.1.2
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -165,6 +165,9 @@ Visit [persistentlogin.com](https://persistentlogin.com) to learn more.
 5. Active Login settings (premium)
 
 == Changelog == 
+
+= 3.1.2 = 
+* Fix: Fixed security check failed message on some premium installations on dashboard feature toggle
 
 = 3.1.1 = 
 * Security update: Security related changes. It is recommended for all users. 
