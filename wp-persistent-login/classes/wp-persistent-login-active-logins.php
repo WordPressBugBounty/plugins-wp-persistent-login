@@ -336,6 +336,17 @@ class WP_Persistent_Login_Active_Logins {
             // get all users sessions, oldest first
             $sessions = $this->get_user_sessions( $user, SORT_ASC );
 
+            // foreach session, check if the expiration has passed, if it has, remove the session from the db and the array
+            foreach( $sessions as $key => $session ) {
+
+                if( isset($session['expiration']) && $session['expiration'] < time() ) {
+                    // remove the session by verifier, exclude session data to remove the session from db
+                    $session_manager->persistent_login_update_session( $key );
+                    unset($sessions[$key]);
+                }
+
+            }
+
             $session_tokens = array_keys( $sessions );
             
             // remove all invalid sessions, leaving only the limit
