@@ -39,11 +39,11 @@ class WP_Persistent_Login_Settings {
 
         // display messages to the user if a message is set
         if( isset($_GET['wppl-msg']) ) {
-            $this->message = $_GET['wppl-msg'];
+            $this->message = esc_attr($_GET['wppl-msg']);
             $this->message_key = 'wppl-msg';
         }
         if( isset( $_GET['type'] ) ) {
-            $this->type = $_GET['type'];
+            $this->type = esc_attr($_GET['type']);
             $this->type_key = 'type';
         }        
 
