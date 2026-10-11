@@ -45,7 +45,8 @@ if ( !function_exists( 'persistent_login' ) ) {
         global $persistent_login;
         if ( !isset( $persistent_login ) ) {
             // Include Freemius SDK.
-            // SDK is auto-loaded through composer
+            require_once dirname( __FILE__ ) . '/freemius/start.php';
+            // ! NOT WORKING, manually loaded now - SDK is auto-loaded through composer
             $persistent_login = fs_dynamic_init( array(
                 'id'               => '1917',
                 'slug'             => 'wp-persistent-login',

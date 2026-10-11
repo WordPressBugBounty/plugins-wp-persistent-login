@@ -1,7 +1,19 @@
 {
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "freemius/wordpress-sdk",
+                "version": "2.13.5",
+                "dist": {
+                    "type": "zip",
+                    "url": "tmp/wordpress-sdk-2.13.5.zip"
+                }
+            }
+        }
+    ],
     "require": {
         "whichbrowser/parser": "^2.0",
-        "psr/cache": "1.0.1",
-        "freemius/wordpress-sdk": "^2.13"
+        "psr/cache": "1.0.1"
     }
 }
